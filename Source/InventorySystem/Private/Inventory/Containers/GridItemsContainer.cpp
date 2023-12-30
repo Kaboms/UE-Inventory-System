@@ -5,11 +5,11 @@
 
 bool UGridItemsContainer::AddItem(UItemBase* Item)
 {
-    FVector2D Position(0, 0);
+    FVector2f Position(0, 0);
     return AddContainerItemFromPosition(CreateContainerItem(Item), Position);
 }
 
-bool UGridItemsContainer::AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2D& Position)
+bool UGridItemsContainer::AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position)
 {
     while (ItemsMap.Contains(Position))
     {
@@ -22,7 +22,7 @@ bool UGridItemsContainer::AddContainerItemFromPosition(UContainerItemBase* Conta
             }
         }
 
-        if (MoveToDirection(Position, FillDirection) == false)
+        if (!MoveToFillDirection(Position))
         {
             return false;
         }
@@ -35,7 +35,7 @@ bool UGridItemsContainer::AddContainerItemFromPosition(UContainerItemBase* Conta
 
 bool UGridItemsContainer::AddItems(TArray<UItemBase*> Items)
 {
-    FVector2D Position(0, 0);
+    FVector2f Position(0, 0);
 
     for (UItemBase* Item : Items)
     {
@@ -50,18 +50,36 @@ bool UGridItemsContainer::AddItems(TArray<UItemBase*> Items)
 
 void UGridItemsContainer::AddContainerItem(UContainerItemBase* ContainerItem)
 {
-    FVector2D Position(0, 0);
+    FVector2f Position(0, 0);
     AddContainerItemFromPosition(ContainerItem, Position);
 }
 
 void UGridItemsContainer::RemoveContainerItem(UContainerItemBase* ContainerItem)
 {
-    FVector2D ItemPosition;
+    FVector2f ItemPosition;
 
     if (FindContainerItemPosition(ContainerItem, ItemPosition))
     {
         ItemsMap.Remove(ItemPosition);
     }
+}
+
+void UGridItemsContainer::InitDefaultItems()
+{
+    FVector2f Position(0, 0);
+
+    for (FDefaultContainerItem DefaultItem : DefaultItems)
+    {
+        checkf(AddContainerItemFromPosition(CreateItemFromDefault(DefaultItem), Position), TEXT("Failed to fill container with default items. Is there enough space in the container?"))
+    }
+}
+
+TArray<UContainerItemBase*> UGridItemsContainer::GetContainerItems()
+{
+    TArray<UContainerItemBase*> Result;
+    ItemsMap.GenerateValueArray(Result);
+
+    return Result;
 }
 
 void UGridItemsContainer::Refill()
@@ -71,50 +89,47 @@ void UGridItemsContainer::Refill()
 
     ItemsMap.Empty();
 
-    FVector2D Position(0, 0);
+    FVector2f Position(0, 0);
 
     for (UContainerItemBase* ContainerItem : ContainerItems)
     {
         ItemsMap.Add(Position, ContainerItem);
-        MoveToDirection(Position, FillDirection);
+        MoveToFillDirection(Position);
     }
 }
 
-bool UGridItemsContainer::MoveToDirection(FVector2D& CurrentPosition, EGridContainerDirection Direction)
+bool UGridItemsContainer::MoveToFillDirection(FVector2f& CurrentPosition)
 {
     if (FillDirection == EGridContainerDirection::Horizontal)
     {
-        CurrentPosition.X += 1;
-
-        if (MaxCollumns != 0 && CurrentPosition.X >= MaxCollumns)
-        {
-            if (CurrentPosition.Y + 1 >= MaxRows)
-            {
-                return false;
-            }
-            CurrentPosition.Y += 1;
-            CurrentPosition.X = 0;
-        }
+        Move(CurrentPosition.X, MaxCollumns, CurrentPosition.Y, MaxRows);
     }
     else if (FillDirection == EGridContainerDirection::Vertical)
     {
-        CurrentPosition.Y += 1;
-
-        if (MaxRows != 0 && CurrentPosition.Y >= MaxRows)
-        {
-            if (CurrentPosition.X + 1 >= MaxCollumns)
-            {
-                return false;
-            }
-            CurrentPosition.Y = 0;
-            CurrentPosition.X += 1;
-        }
+        Move(CurrentPosition.Y, MaxRows, CurrentPosition.X, MaxCollumns);
     }
 
     return true;
 }
 
-bool UGridItemsContainer::MoveItemToPosition(FVector2D& ItemPosition, FVector2D NewItemPosition)
+bool UGridItemsContainer::Move(float& XPosition, const int32& XMaxPosition, float& YPosition, const int32& YMaxPosition)
+{
+    XPosition += 1;
+
+    if (XMaxPosition != 0 && XPosition >= XMaxPosition)
+    {
+        if (YMaxPosition != 0 && YPosition + 1 >= YMaxPosition)
+        {
+            return false;
+        }
+        YPosition += 1;
+        XPosition = 0;
+    }
+
+    return true;
+}
+
+bool UGridItemsContainer::MoveItemToPosition(FVector2f& ItemPosition, FVector2f NewItemPosition)
 {
     if (IsPositionValid(NewItemPosition) && ItemsMap.Contains(ItemPosition) && !ItemsMap.Contains(NewItemPosition))
     {
@@ -129,12 +144,12 @@ bool UGridItemsContainer::MoveItemToPosition(FVector2D& ItemPosition, FVector2D 
     return false;
 }
 
-bool UGridItemsContainer::IsPositionValid(FVector2D Position)
+bool UGridItemsContainer::IsPositionValid(FVector2f Position)
 {
     return (MaxCollumns == 0 || Position.X < MaxCollumns) && (MaxRows == 0 || Position.Y < MaxRows);
 }
 
-bool UGridItemsContainer::FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2D& OutPos)
+bool UGridItemsContainer::FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos)
 {
     for (auto ContainerItemPair : ItemsMap)
     {

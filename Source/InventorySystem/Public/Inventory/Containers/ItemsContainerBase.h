@@ -18,7 +18,7 @@ class INVENTORYSYSTEM_API UItemsContainerBase : public UWorldObject
 
 public:
 	// Return True on success addition.
-	// May return false if here is no enought space or something like this
+	// Return false if here is no enought space or something like this
 	UFUNCTION(BlueprintCallable)
 	virtual bool AddItem(UItemBase* Item);
 
@@ -32,7 +32,7 @@ public:
 	bool AddItemsData(TArray<UItemData*> ItemsData);
 
 	UFUNCTION(BlueprintCallable)
-	void InitDefaultItems();
+	virtual void InitDefaultItems();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AddContainerItem(UContainerItemBase* ContainerItem);
@@ -43,7 +43,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual UContainerItemBase* CreateContainerItem(UItemBase* Item);
 
+	UFUNCTION(BlueprintCallable)
+	virtual UContainerItemBase* FindContainerItem(UItemData* ItemData);
+
+	UFUNCTION(BlueprintCallable)
+	virtual TArray<UContainerItemBase*> GetContainerItems();
+
 protected:
+	UContainerItemBase* CreateItemFromDefault(const FDefaultContainerItem& DefaultContainerItem);
+
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Add Item"))
 	bool ReceiveAddItem(UItemBase* Item);
 
@@ -53,8 +61,10 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Remove Container Item"))
 	bool ReceiveRemoveContainerItem(UContainerItemBase* ContainerItem);
 
+	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Get Container Items"))
+	TArray<UContainerItemBase*> ReceiveGetContainerItems();
+
 protected:
 	UPROPERTY(EditAnywhere)
 	TArray<FDefaultContainerItem> DefaultItems;
-
 };

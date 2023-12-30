@@ -28,23 +28,29 @@ public:
 
 	virtual void RemoveContainerItem(UContainerItemBase* ContainerItem) override;
 
+	virtual void InitDefaultItems() override;
+
+	virtual TArray<UContainerItemBase*> GetContainerItems() override;
+
 	UFUNCTION(BlueprintCallable)
-	bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2D& OutPos);
+	bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos);
 
 	// Refiil grid to remove empty spaces
 	UFUNCTION(BlueprintCallable)
 	void Refill();
 
 	UFUNCTION(BlueprintCallable)
-	bool MoveToDirection(FVector2D& CurrentPosition, EGridContainerDirection Direction);
+	bool MoveToFillDirection(FVector2f& CurrentPosition);
+
+	bool Move(float& XPosition, const int32& XMaxPosition, float& YPosition, const int32& YMaxPosition);
 
 	UFUNCTION(BlueprintCallable)
-	bool MoveItemToPosition(FVector2D& ItemPosition, FVector2D NewItemPosition);
+	bool MoveItemToPosition(FVector2f& ItemPosition, FVector2f NewItemPosition);
 
-	bool IsPositionValid(FVector2D Position);
+	bool IsPositionValid(FVector2f Position);
 
 protected:
-	bool AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2D& Position);
+	bool AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position);
 
 public:
 	// Setup 0 to infinity 
@@ -59,5 +65,5 @@ public:
 	EGridContainerDirection FillDirection = EGridContainerDirection::Vertical;
 
 	UPROPERTY(BlueprintReadOnly)
-	TMap<FVector2D, UContainerItemBase*> ItemsMap;
+	TMap<FVector2f, UContainerItemBase*> ItemsMap;
 };

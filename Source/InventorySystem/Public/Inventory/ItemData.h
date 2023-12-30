@@ -3,7 +3,6 @@
 #include "GameplayTagContainer.h"
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "WorldObject.h"
 
 #include "ItemData.generated.h"
 

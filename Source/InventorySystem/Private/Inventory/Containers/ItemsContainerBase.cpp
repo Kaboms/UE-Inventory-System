@@ -48,16 +48,22 @@ void UItemsContainerBase::InitDefaultItems()
 {
     for (FDefaultContainerItem DefaultItem : DefaultItems)
     {
-        UItemData* ItemData = DefaultItem.Item;
-
-        UItemBase* ItemBase = NewObject<UItemBase>(this, ItemData->ItemInstanceClass);
-        ItemBase->ItemData = ItemData;
-
-        UContainerItemBase* ContainerItem = DefaultItem.ContainerItem;
-        ContainerItem->SetItem(ItemBase, ContainerItem->GetAmount());
-
-        AddContainerItem(ContainerItem);
+        AddContainerItem(CreateItemFromDefault(DefaultItem));
     }
+}
+
+UContainerItemBase* UItemsContainerBase::CreateItemFromDefault(const FDefaultContainerItem& DefaultContainerItem)
+{
+    UItemData* ItemData = DefaultContainerItem.Item;
+
+    UItemBase* ItemBase = NewObject<UItemBase>(this, ItemData->ItemInstanceClass);
+    ItemBase->ItemData = ItemData;
+
+    UContainerItemBase* ContainerItem = DefaultContainerItem.ContainerItem;
+    ContainerItem->Container = this;
+    ContainerItem->SetItem(ItemBase, ContainerItem->GetAmount());
+
+    return ContainerItem;
 }
 
 void UItemsContainerBase::AddContainerItem(UContainerItemBase* ContainerItem)
@@ -77,4 +83,24 @@ UContainerItemBase* UItemsContainerBase::CreateContainerItem(UItemBase* Item)
     ContainerItem->AddItem(Item);
 
     return ContainerItem;
+}
+
+UContainerItemBase* UItemsContainerBase::FindContainerItem(UItemData* ItemData)
+{
+    TArray<UContainerItemBase*> ContainerItems = GetContainerItems();
+
+    for (UContainerItemBase* ContainerItem : ContainerItems)
+    {
+        if (ContainerItem->GetItem()->ItemData == ItemData)
+        {
+            return ContainerItem;
+        }
+    }
+
+    return nullptr;
+}
+
+TArray<UContainerItemBase*> UItemsContainerBase::GetContainerItems()
+{
+    return GetContainerItems();
 }
