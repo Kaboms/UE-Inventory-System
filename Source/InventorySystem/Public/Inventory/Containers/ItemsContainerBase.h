@@ -3,13 +3,15 @@
 #include "GameplayTagContainer.h"
 #include "CoreMinimal.h"
 #include "WorldObject.h"
+#include "Inventory/Containers/ContainerItemBase.h"
 
 #include "ItemsContainerBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FContainerOpened);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FContainerClosed);
+
 class UItemBase;
 class UItemData;
-class UContainerItemBase;
-struct FDefaultContainerItem;
 
 UCLASS(Abstract, Blueprintable, BlueprintType, DefaultToInstanced, EditInlineNew)
 class INVENTORYSYSTEM_API UItemsContainerBase : public UWorldObject
@@ -49,6 +51,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual TArray<UContainerItemBase*> GetContainerItems();
 
+	UFUNCTION(BlueprintCallable)
+	virtual void Open();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Close();
+
 protected:
 	UContainerItemBase* CreateItemFromDefault(const FDefaultContainerItem& DefaultContainerItem);
 
@@ -64,7 +72,20 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Get Container Items"))
 	TArray<UContainerItemBase*> ReceiveGetContainerItems();
 
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "Open")
+	void ReceiveOpen();
+
+	UFUNCTION(BlueprintImplementableEvent, DisplayName = "Close")
+	void ReceiveClose();
+
 protected:
 	UPROPERTY(EditAnywhere)
 	TArray<FDefaultContainerItem> DefaultItems;
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FContainerOpened OnOpen;
+
+	UPROPERTY(BlueprintAssignable)
+	FContainerClosed OnClose;
 };

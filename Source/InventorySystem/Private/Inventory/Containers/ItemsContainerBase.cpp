@@ -104,3 +104,17 @@ TArray<UContainerItemBase*> UItemsContainerBase::GetContainerItems()
 {
     return GetContainerItems();
 }
+
+void UItemsContainerBase::Open()
+{
+    ReceiveOpen();
+
+    OnOpen.Broadcast();
+}
+
+void UItemsContainerBase::Close()
+{
+    ReceiveClose();
+
+    OnClose.Broadcast();
+}
