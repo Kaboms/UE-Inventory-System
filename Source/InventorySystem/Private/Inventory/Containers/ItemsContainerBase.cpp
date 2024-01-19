@@ -91,7 +91,7 @@ UContainerItemBase* UItemsContainerBase::FindContainerItem(UItemData* ItemData)
 
     for (UContainerItemBase* ContainerItem : ContainerItems)
     {
-        if (ContainerItem->GetItem()->ItemData == ItemData)
+        if (ContainerItem->GetItemData() == ItemData)
         {
             return ContainerItem;
         }

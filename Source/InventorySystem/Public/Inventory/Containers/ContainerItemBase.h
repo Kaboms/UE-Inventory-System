@@ -59,6 +59,9 @@ public:
 	UFUNCTION(BlueprintGetter)
 	UItemBase* GetItem();
 
+	UFUNCTION(BlueprintPure)
+	UItemData* GetItemData();
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="Drop"))
 	void ReceiveDrop(int32 AmountToDrop = 1);

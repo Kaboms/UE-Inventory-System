@@ -14,7 +14,7 @@ bool UGridItemsContainer::AddContainerItemFromPosition(UContainerItemBase* Conta
     while (ItemsMap.Contains(Position))
     {
         UContainerItemBase* ExistedContainerItem = ItemsMap[Position];
-        if (ExistedContainerItem->GetItem()->ItemData->ID == ContainerItem->GetItem()->ItemData->ID)
+        if (ExistedContainerItem->GetItemData()->ID == ContainerItem->GetItemData()->ID)
         {
             if (ExistedContainerItem->MergeWithOther(ContainerItem))
             {
@@ -102,11 +102,11 @@ bool UGridItemsContainer::MoveToFillDirection(FVector2f& CurrentPosition)
 {
     if (FillDirection == EGridContainerDirection::Horizontal)
     {
-        Move(CurrentPosition.X, MaxCollumns, CurrentPosition.Y, MaxRows);
+        Move(CurrentPosition.Y, MaxRows, CurrentPosition.X, MaxCollumns);
     }
     else if (FillDirection == EGridContainerDirection::Vertical)
     {
-        Move(CurrentPosition.Y, MaxRows, CurrentPosition.X, MaxCollumns);
+        Move(CurrentPosition.X, MaxCollumns, CurrentPosition.Y, MaxRows);
     }
 
     return true;

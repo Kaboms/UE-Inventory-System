@@ -70,7 +70,7 @@ void UContainerItemBase::SetAmount(int32 NewAmount)
 {
     if (IsValid(Item))
     {
-        Amount = FMath::Clamp(NewAmount, 0, Item->ItemData->StackSize);
+        Amount = FMath::Clamp(NewAmount, 0, GetItemData()->StackSize);
         if (Amount == 0)
         {
             RemoveAll();
@@ -83,15 +83,20 @@ UItemBase* UContainerItemBase::GetItem()
     return Item;
 }
 
+UItemData* UContainerItemBase::GetItemData()
+{
+    return GetItem()->ItemData;
+}
+
 bool UContainerItemBase::MergeWithOther(UContainerItemBase* OtherContainerItem)
 {
-    checkf(Item->ItemData->ID == OtherContainerItem->GetItem()->ItemData->ID, TEXT("Failed merge item with different ID"));
+    checkf(GetItemData()->ID == OtherContainerItem->GetItem()->ItemData->ID, TEXT("Failed merge item with different ID"));
 
     int32 Reminder = 0;
     int32 NewAmount = OtherContainerItem->Amount + Amount;
-    if (NewAmount > Item->ItemData->StackSize)
+    if (NewAmount > GetItemData()->StackSize)
     {
-        Reminder = NewAmount - Item->ItemData->StackSize;
+        Reminder = NewAmount - GetItemData()->StackSize;
     }
 
     OtherContainerItem->SetAmount(Reminder);
