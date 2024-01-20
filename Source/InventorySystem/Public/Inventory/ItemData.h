@@ -14,8 +14,15 @@ class INVENTORYSYSTEM_API UItemData : public UPrimaryDataAsset
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, Meta = (DefaultToSelf = "Outer"))
+	static UItemBase* ConstructItemInstance(UObject* Outer, UItemData* ItemData);
+
+public:
 	UItemData();
 
+	UItemBase* ConstructItemInstance(UObject* Outer);
+
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName ID;
 

@@ -2,16 +2,16 @@
 
 #include "CoreMinimal.h"
 
-#include "UseableInterface.generated.h"
+#include "UsableInterface.generated.h"
 
 
 UINTERFACE(MinimalAPI, Blueprintable)
-class UUseableInterface : public UInterface
+class UUsableInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-class IUseableInterface
+class IUsableInterface
 {
 	GENERATED_BODY()
 

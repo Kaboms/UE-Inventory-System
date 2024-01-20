@@ -5,18 +5,31 @@
 #include "Inventory/ItemData.h"
 #include "Inventory/Containers/ItemsContainerBase.h"
 
+UContainerItemBase* UContainerItemBase::ConstructContainerItem(UObject* Outer, UItemData* ItemData, TSubclassOf<UContainerItemBase> ContainerItemClass)
+{
+    UContainerItemBase* ContainerItemBase = NewObject<UContainerItemBase>(Outer, ContainerItemClass);
+    ContainerItemBase->SetItemData(ItemData);
+
+    return ContainerItemBase;
+}
+
 void UContainerItemBase::AddItem(UItemBase* InItem, int32 InAmount)
 {
     if (!IsValid(Item))
     {
         Item = InItem;
     }
-    else
-    {
-        checkf(Item->ItemData->ID == InItem->ItemData->ID, TEXT("Cannot add the item with a different ID to the container item"));
-    }
 
-    if (Amount + InAmount <= Item->ItemData->StackSize)
+    AddItemData(Item->ItemData, InAmount);
+}
+
+void UContainerItemBase::AddItemData(UItemData* InItemData, int32 InAmount)
+{
+    checkf(InItemData->ID == InItemData->ID, TEXT("Cannot add the item with a different ID to the container item"));
+
+    ItemData = InItemData;
+
+    if (Amount + InAmount <= InItemData->StackSize)
     {
         Amount += InAmount;
     }
@@ -29,6 +42,12 @@ void UContainerItemBase::AddItem(UItemBase* InItem, int32 InAmount)
 void UContainerItemBase::SetItem(UItemBase* NewItem, int32 InAmount)
 {
     Item = NewItem;
+    SetItemData(Item->ItemData, InAmount);
+}
+
+void UContainerItemBase::SetItemData(UItemData* InItemData, int32 InAmount)
+{
+    ItemData = InItemData;
     Amount = InAmount;
 }
 
@@ -70,7 +89,7 @@ void UContainerItemBase::SetAmount(int32 NewAmount)
 {
     if (IsValid(Item))
     {
-        Amount = FMath::Clamp(NewAmount, 0, GetItemData()->StackSize);
+        Amount = FMath::Clamp(NewAmount, 0, ItemData->StackSize);
         if (Amount == 0)
         {
             RemoveAll();
@@ -80,23 +99,28 @@ void UContainerItemBase::SetAmount(int32 NewAmount)
 
 UItemBase* UContainerItemBase::GetItem()
 {
+    if (!IsValid(Item))
+    {
+        Item = ItemData->ConstructItemInstance(this);
+    }
+
     return Item;
 }
 
 UItemData* UContainerItemBase::GetItemData()
 {
-    return GetItem()->ItemData;
+    return ItemData;
 }
 
 bool UContainerItemBase::MergeWithOther(UContainerItemBase* OtherContainerItem)
 {
-    checkf(GetItemData()->ID == OtherContainerItem->GetItem()->ItemData->ID, TEXT("Failed merge item with different ID"));
+    checkf(ItemData->ID == OtherContainerItem->GetItem()->ItemData->ID, TEXT("Failed merge item with different ID"));
 
     int32 Reminder = 0;
     int32 NewAmount = OtherContainerItem->Amount + Amount;
-    if (NewAmount > GetItemData()->StackSize)
+    if (NewAmount > ItemData->StackSize)
     {
-        Reminder = NewAmount - GetItemData()->StackSize;
+        Reminder = NewAmount - ItemData->StackSize;
     }
 
     OtherContainerItem->SetAmount(Reminder);

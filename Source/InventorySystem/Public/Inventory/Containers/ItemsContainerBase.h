@@ -58,8 +58,6 @@ public:
 	virtual void Close();
 
 protected:
-	UContainerItemBase* CreateItemFromDefault(const FDefaultContainerItem& DefaultContainerItem);
-
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Add Item"))
 	bool ReceiveAddItem(UItemBase* Item);
 
@@ -79,8 +77,8 @@ protected:
 	void ReceiveClose();
 
 protected:
-	UPROPERTY(EditAnywhere)
-	TArray<FDefaultContainerItem> DefaultItems;
+	UPROPERTY(EditAnywhere, Instanced)
+	TArray<UContainerItemBase*> DefaultContainerItems;
 
 public:
 	UPROPERTY(BlueprintAssignable)

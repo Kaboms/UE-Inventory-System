@@ -25,10 +25,7 @@ bool UItemsContainerBase::AddItems(TArray<UItemBase*> Items)
 
 bool UItemsContainerBase::AddItemData(UItemData* ItemData)
 {
-    UItemBase* ItemBase = NewObject<UItemBase>(this, ItemData->ItemInstanceClass);
-    ItemBase->ItemData = ItemData;
-
-    return AddItem(ItemBase);
+    return AddItem(UItemData::ConstructItemInstance(this, ItemData));
 }
 
 bool UItemsContainerBase::AddItemsData(TArray<UItemData*> ItemsData)
@@ -46,24 +43,10 @@ bool UItemsContainerBase::AddItemsData(TArray<UItemData*> ItemsData)
 
 void UItemsContainerBase::InitDefaultItems()
 {
-    for (FDefaultContainerItem DefaultItem : DefaultItems)
+    for (UContainerItemBase* DefaultItem : DefaultContainerItems)
     {
-        AddContainerItem(CreateItemFromDefault(DefaultItem));
+        AddContainerItem(DefaultItem);
     }
-}
-
-UContainerItemBase* UItemsContainerBase::CreateItemFromDefault(const FDefaultContainerItem& DefaultContainerItem)
-{
-    UItemData* ItemData = DefaultContainerItem.Item;
-
-    UItemBase* ItemBase = NewObject<UItemBase>(this, ItemData->ItemInstanceClass);
-    ItemBase->ItemData = ItemData;
-
-    UContainerItemBase* ContainerItem = DefaultContainerItem.ContainerItem;
-    ContainerItem->Container = this;
-    ContainerItem->SetItem(ItemBase, ContainerItem->GetAmount());
-
-    return ContainerItem;
 }
 
 void UItemsContainerBase::AddContainerItem(UContainerItemBase* ContainerItem)

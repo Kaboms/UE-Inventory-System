@@ -16,6 +16,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool IsDroppable();
 
+	UFUNCTION(BlueprintCallable)
+	static bool DoesItemClassImplementInterface(TSubclassOf<UItemBase> ItemClass, TSubclassOf<UInterface> Interface);
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "IsDroppable"))
 	bool ReceiveIsDroppable();

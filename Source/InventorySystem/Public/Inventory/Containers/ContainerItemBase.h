@@ -8,29 +8,26 @@ class UItemBase;
 class UItemData;
 class UItemsContainerBase;
 
-USTRUCT(BlueprintType)
-struct FDefaultContainerItem
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere)
-	UContainerItemBase* ContainerItem;
-
-	UPROPERTY(EditAnywhere)
-	UItemData* Item;
-};
-
 UCLASS(Blueprintable, BlueprintType, DefaultToInstanced, EditInlineNew)
 class INVENTORYSYSTEM_API UContainerItemBase : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable)
-	virtual void AddItem(UItemBase* InItem, int32 InAmount = 1);
+	UFUNCTION(BlueprintCallable, Meta = (DefaultToSelf = "Outer", DeterminesOutputType = "ContainerItemClass"))
+	static UContainerItemBase* ConstructContainerItem(UObject* Outer, UItemData* ItemData, TSubclassOf<UContainerItemBase> ContainerItemClass);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetItem(UItemBase* NewItem, int32 InAmount = 1);
+	virtual void AddItem(UItemBase* Item, int32 Amount = 1);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void AddItemData(UItemData* ItemData, int32 Amount = 1);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetItem(UItemBase* NewItem, int32 Amount = 1);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetItemData(UItemData* ItemData, int32 Amount = 1);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Drop(int32 AmountToDrop = 1);
@@ -56,10 +53,10 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetAmount(int32 NewAmount);
 
-	UFUNCTION(BlueprintGetter)
+	UFUNCTION(BlueprintPure)
 	UItemBase* GetItem();
 
-	UFUNCTION(BlueprintPure)
+	UFUNCTION(BlueprintGetter)
 	UItemData* GetItemData();
 
 protected:
@@ -80,6 +77,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintGetter = GetAmount, BlueprintSetter = SetAmount)
 	int32 Amount = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, BlueprintGetter = GetItem, meta = (ExposeOnSpawn = "true"))
+	UPROPERTY()
 	TObjectPtr<UItemBase> Item;
+
+	UPROPERTY(EditAnywhere, BlueprintGetter = GetItemData, meta = (ExposeOnSpawn = "true"))
+	TObjectPtr<UItemData> ItemData;
 };
