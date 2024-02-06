@@ -25,18 +25,18 @@ void UContainerItemBase::AddItem(UItemBase* InItem, int32 InAmount)
 
 void UContainerItemBase::AddItemData(UItemData* InItemData, int32 InAmount)
 {
-    checkf(InItemData->ID == InItemData->ID, TEXT("Cannot add the item with a different ID to the container item"));
-
-    ItemData = InItemData;
-
-    if (Amount + InAmount <= InItemData->StackSize)
+    if (!IsValid(ItemData))
     {
-        Amount += InAmount;
+        ItemData = InItemData;
     }
-    else
+    else if (ItemData->ID != InItemData->ID)
     {
-        checkNoEntry()
+        checkf(InItemData->ID == InItemData->ID, TEXT("Cannot add the item with a different ID to the container item"));
+        return;
     }
+
+    SetAmount(Amount + InAmount);
+
 }
 
 void UContainerItemBase::SetItem(UItemBase* NewItem, int32 InAmount)
@@ -87,9 +87,12 @@ int32 UContainerItemBase::GetAmount()
 
 void UContainerItemBase::SetAmount(int32 NewAmount)
 {
-    if (IsValid(Item))
+    if (IsValid(ItemData))
     {
         Amount = FMath::Clamp(NewAmount, 0, ItemData->StackSize);
+
+        checkf(NewAmount <= ItemData->StackSize, TEXT("Items stack overflow"));
+
         if (Amount == 0)
         {
             RemoveAll();
@@ -114,30 +117,40 @@ UItemData* UContainerItemBase::GetItemData()
 
 bool UContainerItemBase::MergeWithOther(UContainerItemBase* OtherContainerItem)
 {
-    checkf(ItemData->ID == OtherContainerItem->GetItem()->ItemData->ID, TEXT("Failed merge item with different ID"));
-
-    int32 Reminder = 0;
-    int32 NewAmount = OtherContainerItem->Amount + Amount;
-    if (NewAmount > ItemData->StackSize)
+    if (ItemData->ID == OtherContainerItem->GetItem()->ItemData->ID)
     {
-        Reminder = NewAmount - ItemData->StackSize;
+        int32 Reminder = 0;
+        int32 NewAmount = OtherContainerItem->Amount + Amount;
+        if (NewAmount > ItemData->StackSize)
+        {
+            Reminder = NewAmount - ItemData->StackSize;
+        }
+
+        OtherContainerItem->SetAmount(Reminder);
+        SetAmount(NewAmount - Reminder);
+
+        return Reminder == 0;
     }
 
-    OtherContainerItem->SetAmount(Reminder);
-    SetAmount(NewAmount - Reminder);
+    checkf(false, TEXT("Failed merge item with different ID"));
 
-    return Reminder == 0;
+    return false;
 }
 
 UContainerItemBase* UContainerItemBase::Split(int32 SplitAmount)
 {
-    checkf(SplitAmount > 0 && SplitAmount < Amount, TEXT("Invalid SplitAmount value: %d"), SplitAmount);
+    if (SplitAmount > 0 && SplitAmount < Amount)
+    {
+        UContainerItemBase* NewContainerItem = DuplicateObject<UContainerItemBase>(this, GetOuter());
+        NewContainerItem->SetAmount(SplitAmount);
 
-    UContainerItemBase* NewContainerItem = DuplicateObject<UContainerItemBase>(this, GetOuter());
-    NewContainerItem->SetAmount(SplitAmount);
+        SetAmount(Amount - SplitAmount);
 
-    SetAmount(Amount - SplitAmount);
+        return NewContainerItem;
+    }
 
-    return NewContainerItem;
+    checkf(false, TEXT("Invalid SplitAmount value: %d"), SplitAmount);
+
+    return nullptr;
 }
 

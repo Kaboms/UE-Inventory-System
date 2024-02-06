@@ -9,7 +9,7 @@
 class UItemBase;
 
 UCLASS(Blueprintable)
-class INVENTORYSYSTEM_API UItemData : public UPrimaryDataAsset
+class INVENTORYSYSTEM_API UItemData : public UDataAsset
 {
 	GENERATED_BODY()
 

@@ -77,7 +77,7 @@ protected:
 	void ReceiveClose();
 
 protected:
-	UPROPERTY(EditAnywhere, Instanced)
+	UPROPERTY(EditAnywhere, Instanced, BlueprintReadOnly)
 	TArray<UContainerItemBase*> DefaultContainerItems;
 
 public:

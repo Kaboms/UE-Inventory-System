@@ -70,7 +70,10 @@ void UGridItemsContainer::InitDefaultItems()
 
     for (UContainerItemBase* DefaultItem : DefaultContainerItems)
     {
-        checkf(AddContainerItemFromPosition(DefaultItem, Position), TEXT("Failed to fill container with default items. Is there enough space in the container?"))
+        if (!AddContainerItemFromPosition(DefaultItem, Position))
+        {
+            checkf(false, TEXT("Failed to fill container with default items. Is there enough space in the container?"))
+        }
     }
 }
 
