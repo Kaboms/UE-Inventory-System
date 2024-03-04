@@ -6,7 +6,8 @@
 #include "GameplayTagContainer.h"
 #include "EquipSlotBase.generated.h"
 
-class UItemBase;
+class UContainerItemBase;
+class UItemData;
 
 UCLASS(Blueprintable, BlueprintType, DefaultToInstanced, EditInlineNew)
 class INVENTORYSYSTEM_API UEquipSlotBase : public UObject
@@ -15,15 +16,27 @@ class INVENTORYSYSTEM_API UEquipSlotBase : public UObject
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void Equip(UItemBase* ItemToEquip);
+	void Equip(UContainerItemBase* ContainerItemToEquip);
+
+	UFUNCTION(BlueprintPure)
+	bool CanEquip(UItemData* ItemData);
+
+	UFUNCTION(BlueprintPure)
+	bool CanEquipContainerItem(UContainerItemBase* ContainerItemToEquip);
+
+	UFUNCTION(BlueprintCallable)
+	void TakeOff();
+
+	UFUNCTION(BlueprintCallable)
+	void Select();
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName SlotName;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FGameplayTag SlotTag;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTag RequiredItemType;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	TObjectPtr<UItemBase> Item;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UContainerItemBase> ContainerItem;
 };

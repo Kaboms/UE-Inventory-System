@@ -1,5 +1,3 @@
-// (c) 2021 Sonic Terror
-
 #include "Inventory/Containers/ItemsContainerBase.h"
 #include "Inventory/ItemBase.h"
 #include "Inventory/ItemData.h"
@@ -85,7 +83,7 @@ UContainerItemBase* UItemsContainerBase::FindContainerItem(UItemData* ItemData)
 
 TArray<UContainerItemBase*> UItemsContainerBase::GetContainerItems()
 {
-    return GetContainerItems();
+    return TArray<UContainerItemBase*>();
 }
 
 void UItemsContainerBase::Open()

@@ -1,5 +1,3 @@
-// (c) 2021 Sonic Terror
-
 #include "Inventory/Containers/ContainerItemBase.h"
 #include "Inventory/ItemBase.h"
 #include "Inventory/ItemData.h"
@@ -11,6 +9,17 @@ UContainerItemBase* UContainerItemBase::ConstructContainerItem(UObject* Outer, U
     ContainerItemBase->SetItemData(ItemData);
 
     return ContainerItemBase;
+}
+
+void UContainerItemBase::Swap(UContainerItemBase* OtherContainerItem)
+{
+    UContainerItemBase* Temp = DuplicateObject(OtherContainerItem, NULL);
+    OtherContainerItem->Item = Item;
+    OtherContainerItem->SetItemData(ItemData, Amount);
+
+    Item = Temp->Item;
+    SetItemData(Temp->GetItemData(), Temp->GetAmount());
+
 }
 
 void UContainerItemBase::AddItem(UItemBase* InItem, int32 InAmount)
@@ -49,6 +58,8 @@ void UContainerItemBase::SetItemData(UItemData* InItemData, int32 InAmount)
 {
     ItemData = InItemData;
     Amount = InAmount;
+
+    OnContainerItemUpdated.Broadcast(this);
 }
 
 void UContainerItemBase::Drop(int32 AmountToDrop)
@@ -113,6 +124,11 @@ UItemBase* UContainerItemBase::GetItem()
 UItemData* UContainerItemBase::GetItemData()
 {
     return ItemData;
+}
+
+bool UContainerItemBase::CanAddItem()
+{
+    return !IsValid(ItemData) || Amount < ItemData->StackSize;
 }
 
 bool UContainerItemBase::MergeWithOther(UContainerItemBase* OtherContainerItem)

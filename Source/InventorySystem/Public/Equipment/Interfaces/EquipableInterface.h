@@ -15,6 +15,9 @@ class IEquipableInterface
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void Select();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Equip();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)

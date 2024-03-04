@@ -3,23 +3,30 @@
 #include "Inventory/ItemBase.h"
 #include "Inventory/ItemData.h"
 
+PRAGMA_DISABLE_OPTIMIZATION
+
 bool UGridItemsContainer::AddItem(UItemBase* Item)
 {
     FVector2f Position(0, 0);
-    return AddContainerItemFromPosition(CreateContainerItem(Item), Position);
+
+    return AddContainerItemFromPosition(Item, Position);
 }
 
-bool UGridItemsContainer::AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position)
+bool UGridItemsContainer::AddContainerItemFromPosition(UItemBase* Item, FVector2f& Position)
+{
+    UGridContainerItem* GridContainerItem = CreateGridContainerItem(Item);
+
+    return AddGridContainerItemFromPosition(GridContainerItem, Position);
+}
+
+bool UGridItemsContainer::FindFreePosition(UItemBase* Item, FVector2f& Position)
 {
     while (ItemsMap.Contains(Position))
     {
-        UContainerItemBase* ExistedContainerItem = ItemsMap[Position];
-        if (ExistedContainerItem->GetItemData()->ID == ContainerItem->GetItemData()->ID)
+        UGridContainerItem* ExistedContainerItem = ItemsMap[Position];
+        if (ExistedContainerItem->CanAddItem() && ExistedContainerItem->GetItemData()->ID == Item->ItemData->ID)
         {
-            if (ExistedContainerItem->MergeWithOther(ContainerItem))
-            {
-                return true;
-            }
+            return true;
         }
 
         if (!MoveToFillDirection(Position))
@@ -27,8 +34,6 @@ bool UGridItemsContainer::AddContainerItemFromPosition(UContainerItemBase* Conta
             return false;
         }
     }
-
-    ItemsMap.Add(Position, ContainerItem);
 
     return true;
 }
@@ -39,7 +44,7 @@ bool UGridItemsContainer::AddItems(TArray<UItemBase*> Items)
 
     for (UItemBase* Item : Items)
     {
-        if (!AddContainerItemFromPosition(CreateContainerItem(Item), Position))
+        if (!AddContainerItemFromPosition(Item, Position))
         {
             return false;
         }
@@ -50,17 +55,82 @@ bool UGridItemsContainer::AddItems(TArray<UItemBase*> Items)
 
 void UGridItemsContainer::AddContainerItem(UContainerItemBase* ContainerItem)
 {
-    FVector2f Position(0, 0);
-    AddContainerItemFromPosition(ContainerItem, Position);
+    if (!ContainerItem)
+        return;
+
+    UGridContainerItem* GridContainerItem = UGridContainerItem::ConstructFromContainerItem(this, ContainerItem);
+    AddGridContainerItem(GridContainerItem);
+}
+
+bool UGridItemsContainer::AddGridContainerItem(UGridContainerItem* GridContainerItem)
+{
+    if (!AddGridContainerItemToPosition(GridContainerItem, GridContainerItem->Position))
+    {
+        FVector2f Position(0, 0);
+        return AddGridContainerItemFromPosition(GridContainerItem, Position);
+    }
+
+    return true;
+}
+
+bool UGridItemsContainer::AddGridContainerItemToPosition(UGridContainerItem* GridContainerItem, FVector2f Position)
+{
+    if (!IsPositionValid(Position))
+        return false;
+
+    if (!ItemsMap.Contains(Position))
+    {
+        GridContainerItem->Position = Position;
+        ItemsMap.Add(GridContainerItem->Position, GridContainerItem);
+    }
+    else
+    {
+        UGridContainerItem* OtherContainerItem = ItemsMap[Position];
+        if (OtherContainerItem->GetItemData()->ID == GridContainerItem->GetItemData()->ID)
+        {
+            return OtherContainerItem->MergeWithOther(GridContainerItem);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    OnContainerItemAdded.Broadcast(Position);
+    return true;
+}
+
+void UGridItemsContainer::RemoveGridContainerItemFromPosition(FVector2f Position)
+{
+    UGridContainerItem* GridContainerItem = ItemsMap[Position];
+    ItemsMap.Remove(Position);
+
+    OnContainerItemRemoved.Broadcast(Position);
+}
+
+bool UGridItemsContainer::AddGridContainerItemFromPosition(UGridContainerItem* GridContainerItem, FVector2f& Position)
+{
+    while (FindFreePosition(GridContainerItem->GetItem(), Position))
+    {
+        if (AddGridContainerItemToPosition(GridContainerItem, Position))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool UGridItemsContainer::ChangeContainerItemAtPosition(FVector2f Position, UGridContainerItem* NewGridContainerItem)
+{
+    return false;
 }
 
 void UGridItemsContainer::RemoveContainerItem(UContainerItemBase* ContainerItem)
 {
-    FVector2f ItemPosition;
-
-    if (FindContainerItemPosition(ContainerItem, ItemPosition))
+    if (UGridContainerItem* GridContainerItem = Cast<UGridContainerItem>(ContainerItem))
     {
-        ItemsMap.Remove(ItemPosition);
+        RemoveGridContainerItemFromPosition(GridContainerItem->Position);
     }
 }
 
@@ -70,7 +140,12 @@ void UGridItemsContainer::InitDefaultItems()
 
     for (UContainerItemBase* DefaultItem : DefaultContainerItems)
     {
-        if (!AddContainerItemFromPosition(DefaultItem, Position))
+        UGridContainerItem* GridContainerItem = UGridContainerItem::ConstructFromContainerItem(this, DefaultItem);
+        if (!ItemsMap.Contains(GridContainerItem->Position))
+        {
+            AddGridContainerItem(GridContainerItem);
+        }
+        else if (!AddGridContainerItemFromPosition(GridContainerItem, Position))
         {
             checkf(false, TEXT("Failed to fill container with default items. Is there enough space in the container?"))
         }
@@ -80,23 +155,43 @@ void UGridItemsContainer::InitDefaultItems()
 TArray<UContainerItemBase*> UGridItemsContainer::GetContainerItems()
 {
     TArray<UContainerItemBase*> Result;
-    ItemsMap.GenerateValueArray(Result);
+
+    TArray<UGridContainerItem*> GridContainerItems;
+    ItemsMap.GenerateValueArray(GridContainerItems);
+
+    for (UGridContainerItem* GridContainerItem : GridContainerItems)
+    {
+        Result.Add(GridContainerItem);
+    }
 
     return Result;
 }
 
+UGridContainerItem* UGridItemsContainer::CreateGridContainerItem(UItemBase* Item)
+{
+    UGridContainerItem* ContainerItem = NewObject<UGridContainerItem>(this);
+    ContainerItem->Container = this;
+    ContainerItem->AddItem(Item);
+    return ContainerItem;
+}
+
+UContainerItemBase* UGridItemsContainer::CreateContainerItem(UItemBase* Item)
+{
+    return CreateGridContainerItem(Item);
+}
+
 void UGridItemsContainer::Refill()
 {
-    TArray<UContainerItemBase*> ContainerItems;
+    TArray<UGridContainerItem*> ContainerItems;
     ItemsMap.GenerateValueArray(ContainerItems);
 
     ItemsMap.Empty();
 
     FVector2f Position(0, 0);
 
-    for (UContainerItemBase* ContainerItem : ContainerItems)
+    for (UGridContainerItem* ContainerItem : ContainerItems)
     {
-        ItemsMap.Add(Position, ContainerItem);
+        AddGridContainerItemToPosition(ContainerItem, Position);
         MoveToFillDirection(Position);
     }
 }
@@ -132,19 +227,45 @@ bool UGridItemsContainer::Move(float& XPosition, const int32& XMaxPosition, floa
     return true;
 }
 
-bool UGridItemsContainer::MoveItemToPosition(FVector2f& ItemPosition, FVector2f NewItemPosition)
+bool UGridItemsContainer::MoveItemToPosition(UGridContainerItem* GridContainerItem, FVector2f NewItemPosition)
 {
-    if (IsPositionValid(NewItemPosition) && ItemsMap.Contains(ItemPosition) && !ItemsMap.Contains(NewItemPosition))
+    FVector2f PrevPos = GridContainerItem->Position;
+    if (IsPositionValid(NewItemPosition))
     {
-        UContainerItemBase* ContainerItemBase = ItemsMap[ItemPosition];
-        ItemsMap.Remove(ItemPosition);
-
-        ItemsMap[NewItemPosition] = ContainerItemBase;
-
-        return true;
+        if (AddGridContainerItemToPosition(GridContainerItem, NewItemPosition))
+        {
+            //New position was empty and item added to is succesfull. Remove item from previous pos
+            RemoveGridContainerItemFromPosition(PrevPos);
+        }
+        else
+        {
+            UGridContainerItem* OtherGridContainerItem = ItemsMap[NewItemPosition];
+            if (OtherGridContainerItem->GetItemData()->ID == GridContainerItem->GetItemData()->ID)
+            {
+                // Items merged so we do nothing
+                return false;
+            }
+            else
+            {
+                // It's different items so we swap them
+                SwapItems(GridContainerItem, OtherGridContainerItem);
+            }
+        }
     }
 
-    return false;
+    return true;
+}
+
+void UGridItemsContainer::SwapItemsPositions(FVector2f A, FVector2f B)
+{
+    ensure(ItemsMap.Contains(A) && ItemsMap.Contains(B));
+
+    SwapItems(ItemsMap[A], ItemsMap[B]);
+}
+
+void UGridItemsContainer::SwapItems(UGridContainerItem* A, UGridContainerItem* B)
+{
+    A->Swap(B);
 }
 
 bool UGridItemsContainer::IsPositionValid(FVector2f Position)
@@ -152,7 +273,7 @@ bool UGridItemsContainer::IsPositionValid(FVector2f Position)
     return (MaxCollumns == 0 || Position.X < MaxCollumns) && (MaxRows == 0 || Position.Y < MaxRows);
 }
 
-bool UGridItemsContainer::FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos)
+bool UGridItemsContainer::FindContainerItemPosition(UGridContainerItem* ContainerItem, FVector2f& OutPos)
 {
     for (auto ContainerItemPair : ItemsMap)
     {
@@ -165,3 +286,5 @@ bool UGridItemsContainer::FindContainerItemPosition(UContainerItemBase* Containe
 
     return false;
 }
+
+PRAGMA_ENABLE_OPTIMIZATION

@@ -4,6 +4,8 @@
 
 #include "ContainerItemBase.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FContainerItemUpdated, UContainerItemBase*, ContainerItem);
+
 class UItemBase;
 class UItemData;
 class UItemsContainerBase;
@@ -16,6 +18,9 @@ class INVENTORYSYSTEM_API UContainerItemBase : public UObject
 public:
 	UFUNCTION(BlueprintCallable, Meta = (DefaultToSelf = "Outer", DeterminesOutputType = "ContainerItemClass"))
 	static UContainerItemBase* ConstructContainerItem(UObject* Outer, UItemData* ItemData, TSubclassOf<UContainerItemBase> ContainerItemClass);
+
+	UFUNCTION(BlueprintCallable)
+	void Swap(UContainerItemBase* OtherContainerItem);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AddItem(UItemBase* Item, int32 Amount = 1);
@@ -41,6 +46,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void RemoveAll();
 
+	// Return true if here is no reminder
 	UFUNCTION(BlueprintCallable)
 	bool MergeWithOther(UContainerItemBase* OtherContainerItem);
 
@@ -59,6 +65,9 @@ public:
 	UFUNCTION(BlueprintGetter)
 	UItemData* GetItemData();
 
+	UFUNCTION(BlueprintPure)
+	bool CanAddItem();
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="Drop"))
 	void ReceiveDrop(int32 AmountToDrop = 1);
@@ -72,6 +81,9 @@ protected:
 public:
 	UPROPERTY(BlueprintReadWrite)
 	TObjectPtr<UItemsContainerBase> Container;
+
+	UPROPERTY(BlueprintAssignable, Category = "Event Dispatcher")
+	FContainerItemUpdated OnContainerItemUpdated;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintGetter = GetAmount, BlueprintSetter = SetAmount)
