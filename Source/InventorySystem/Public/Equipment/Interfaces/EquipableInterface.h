@@ -18,7 +18,7 @@ public:
 	void Select();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void Equip();
+	void Equip(UObject* Instigator);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void TakeOff();

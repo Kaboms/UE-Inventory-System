@@ -17,5 +17,5 @@ class IUsableInterface
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void Use();
+	void Use(UObject* Instigator);
 };

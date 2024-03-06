@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 
 #include "Inventory/Containers/ItemsContainerBase.h"
-#include "Inventory/Containers/GridContainerItem.h"
 
 #include "GridItemsContainer.generated.h"
 
@@ -33,19 +32,14 @@ public:
 	virtual void AddContainerItem(UContainerItemBase* ContainerItem) override;
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool AddGridContainerItem(UGridContainerItem* GridContainerItem);
+	virtual bool AddContainerItemToPosition(UContainerItemBase* ContainerItem, FVector2f Position);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool AddGridContainerItemToPosition(UGridContainerItem* GridContainerItem, FVector2f Position);
+	virtual void RemoveContainerItemFromPosition(FVector2f Position);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void RemoveGridContainerItemFromPosition(FVector2f Position);
+	virtual bool AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position);
 
-	UFUNCTION(BlueprintCallable)
-	virtual bool AddGridContainerItemFromPosition(UGridContainerItem* GridContainerItem, FVector2f& Position);
-
-	UFUNCTION(BlueprintCallable)
-	virtual bool ChangeContainerItemAtPosition(FVector2f Position, UGridContainerItem* NewGridContainerItem);
 
 	virtual void RemoveContainerItem(UContainerItemBase* ContainerItem) override;
 
@@ -54,12 +48,7 @@ public:
 	virtual TArray<UContainerItemBase*> GetContainerItems() override;
 
 	UFUNCTION(BlueprintCallable)
-	virtual UGridContainerItem* CreateGridContainerItem(UItemBase* Item);
-
-	virtual UContainerItemBase* CreateContainerItem(UItemBase* Item) override;
-
-	UFUNCTION(BlueprintCallable)
-	bool FindContainerItemPosition(UGridContainerItem* ContainerItem, FVector2f& OutPos);
+	bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos);
 
 	// Refiil grid to remove empty spaces
 	UFUNCTION(BlueprintCallable)
@@ -72,7 +61,10 @@ public:
 
 	// Return false if items merge is failed
 	UFUNCTION(BlueprintCallable)
-	bool MoveItemToPosition(UGridContainerItem* GridContainerItem, FVector2f NewItemPosition);
+	bool MoveItem(UContainerItemBase* ContainerItem, FVector2f NewItemPosition);
+
+	UFUNCTION(BlueprintCallable)
+	bool MoveItemByPosition(FVector2f ItemPosition, FVector2f NewItemPosition);
 
 	// Swap items within same container.
 	UFUNCTION(BlueprintCallable)
@@ -80,7 +72,7 @@ public:
 
 	// Swap items within same container.
 	UFUNCTION(BlueprintCallable)
-	void SwapItems(UGridContainerItem* A, UGridContainerItem* B);
+	void SwapItems(UContainerItemBase* A, UContainerItemBase* B);
 
 	bool IsPositionValid(FVector2f Position);
 
@@ -101,7 +93,7 @@ public:
 	EGridContainerDirection FillDirection = EGridContainerDirection::Vertical;
 
 	UPROPERTY(BlueprintReadOnly)
-	TMap<FVector2f, UGridContainerItem*> ItemsMap;
+	TMap<FVector2f, UContainerItemBase*> ItemsMap;
 
 	UPROPERTY(BlueprintAssignable, Category = "Event Dispatcher")
 	FOnContainerItemAdded OnContainerItemAdded;

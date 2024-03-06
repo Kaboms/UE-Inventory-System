@@ -1,8 +1,9 @@
 #include "Equipment/EquipSlotBase.h"
 #include "Inventory/Containers/ContainerItemBase.h"
 #include "Inventory/ItemData.h"
+#include "Equipment/EquipmentContainer.h"
 
-void UEquipSlotBase::Equip(UContainerItemBase* ContainerItemToEquip)
+void UEquipSlotBase::Equip(UObject* Instigator, UContainerItemBase* ContainerItemToEquip)
 {
     if (IsValid(ContainerItemToEquip))
     {
@@ -13,16 +14,19 @@ void UEquipSlotBase::Equip(UContainerItemBase* ContainerItemToEquip)
     }
 
     ContainerItem = ContainerItemToEquip;
+    ContainerItem->Container = EquipmentContainer;
 
     if (IEquipableInterface* EquipableItem = Cast<IEquipableInterface>(ContainerItem->GetItem()))
     {
-        EquipableItem->Equip();
+        EquipableItem->Equip(Instigator);
     }
+
+    OnEquiped.Broadcast();
 }
 
 bool UEquipSlotBase::CanEquip(UItemData* ItemData)
 {
-    return ItemData->Type.HasTag(RequiredItemType);
+    return !IsValid(ContainerItem) && ItemData->Type.HasTag(RequiredItemType);
 }
 
 bool UEquipSlotBase::CanEquipContainerItem(UContainerItemBase* ContainerItemToEquip)
@@ -45,6 +49,8 @@ void UEquipSlotBase::TakeOff()
 
         ContainerItem = nullptr;
     }
+
+    OnTakeOff.Broadcast();
 }
 
 void UEquipSlotBase::Select()
