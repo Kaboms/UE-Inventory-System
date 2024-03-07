@@ -206,16 +206,10 @@ bool UGridItemsContainer::MoveItemByPosition(FVector2f ItemPosition, FVector2f N
         else
         {
             UContainerItemBase* OtherContainerItem = ItemsMap[NewItemPosition];
-            if (OtherContainerItem->GetItemData()->ID == ContainerItem->GetItemData()->ID)
-            {
-                // Items merged so we do nothing
-                return false;
-            }
-            else
-            {
-                // It's different items so we swap them
-                SwapItems(ContainerItem, OtherContainerItem);
-            }
+            OtherContainerItem->MergeOrSwap(ContainerItem);
+
+            // If not all item merged we should return it to previous pos
+            return ContainerItem->GetAmount() == 0;
         }
     }
 
@@ -226,12 +220,7 @@ void UGridItemsContainer::SwapItemsPositions(FVector2f A, FVector2f B)
 {
     ensure(ItemsMap.Contains(A) && ItemsMap.Contains(B));
 
-    SwapItems(ItemsMap[A], ItemsMap[B]);
-}
-
-void UGridItemsContainer::SwapItems(UContainerItemBase* A, UContainerItemBase* B)
-{
-    A->Swap(B);
+    ItemsMap[A]->Swap(ItemsMap[B]);
 }
 
 bool UGridItemsContainer::IsPositionValid(FVector2f Position)

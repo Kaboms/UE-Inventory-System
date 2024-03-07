@@ -80,7 +80,7 @@ void UContainerItemBase::Remove(int32 AmountToRemove)
 
     if (Amount == 0)
     {
-        Container->RemoveContainerItem(this);
+        RemoveFromContainer();
     }
 
     ReceiveRemove(AmountToRemove);
@@ -89,6 +89,14 @@ void UContainerItemBase::Remove(int32 AmountToRemove)
 void UContainerItemBase::RemoveAll()
 {
     Remove(Amount);
+}
+
+void UContainerItemBase::RemoveFromContainer()
+{
+    if (IsValid(Container))
+    {
+        Container->RemoveContainerItem(this);
+    }
 }
 
 int32 UContainerItemBase::GetAmount()
@@ -106,7 +114,7 @@ void UContainerItemBase::SetAmount(int32 NewAmount)
 
         if (Amount == 0)
         {
-            RemoveAll();
+            RemoveFromContainer();
         }
     }
 }
@@ -131,9 +139,14 @@ bool UContainerItemBase::CanAddItem()
     return !IsValid(ItemData) || Amount < ItemData->StackSize;
 }
 
+bool UContainerItemBase::IsItemSameType(UContainerItemBase* OtherItem)
+{
+    return OtherItem->GetItemData()->ID == GetItemData()->ID;
+}
+
 bool UContainerItemBase::MergeWithOther(UContainerItemBase* OtherContainerItem)
 {
-    if (ItemData->ID == OtherContainerItem->GetItem()->ItemData->ID)
+    if (IsItemSameType(OtherContainerItem))
     {
         int32 Reminder = 0;
         int32 NewAmount = OtherContainerItem->Amount + Amount;
@@ -151,6 +164,18 @@ bool UContainerItemBase::MergeWithOther(UContainerItemBase* OtherContainerItem)
     checkf(false, TEXT("Failed merge item with different ID"));
 
     return false;
+}
+
+void UContainerItemBase::MergeOrSwap(UContainerItemBase* OtherContainerItem)
+{
+    if (IsItemSameType(OtherContainerItem))
+    {
+        MergeWithOther(OtherContainerItem);
+    }
+    else
+    {
+        Swap(OtherContainerItem);
+    }
 }
 
 UContainerItemBase* UContainerItemBase::Split(int32 SplitAmount)

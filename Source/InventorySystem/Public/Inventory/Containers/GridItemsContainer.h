@@ -40,7 +40,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position);
 
-
 	virtual void RemoveContainerItem(UContainerItemBase* ContainerItem) override;
 
 	virtual void InitDefaultItems() override;
@@ -59,20 +58,17 @@ public:
 
 	bool Move(float& XPosition, const int32& XMaxPosition, float& YPosition, const int32& YMaxPosition);
 
-	// Return false if items merge is failed
+	// Return true if item moved to new position
 	UFUNCTION(BlueprintCallable)
 	bool MoveItem(UContainerItemBase* ContainerItem, FVector2f NewItemPosition);
 
+	// Return true if item moved to new position
 	UFUNCTION(BlueprintCallable)
 	bool MoveItemByPosition(FVector2f ItemPosition, FVector2f NewItemPosition);
 
 	// Swap items within same container.
 	UFUNCTION(BlueprintCallable)
 	void SwapItemsPositions(FVector2f A, FVector2f B);
-
-	// Swap items within same container.
-	UFUNCTION(BlueprintCallable)
-	void SwapItems(UContainerItemBase* A, UContainerItemBase* B);
 
 	bool IsPositionValid(FVector2f Position);
 

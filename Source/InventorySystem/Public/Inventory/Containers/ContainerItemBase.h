@@ -46,9 +46,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void RemoveAll();
 
-	// Return true if here is no reminder
+	UFUNCTION(BlueprintCallable)
+	virtual void RemoveFromContainer();
+
+	// Return true if here is no reminder. OtherContainerItem will remove from container If after merge it's amount is zero
 	UFUNCTION(BlueprintCallable)
 	bool MergeWithOther(UContainerItemBase* OtherContainerItem);
+
+	UFUNCTION(BlueprintCallable)
+	void MergeOrSwap(UContainerItemBase* OtherContainerItem);
 
 	UFUNCTION(BlueprintCallable)
 	UContainerItemBase* Split(int32 SplitAmount);
@@ -67,6 +73,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	bool CanAddItem();
+
+	UFUNCTION(BlueprintPure)
+	bool IsItemSameType(UContainerItemBase* OtherItem);
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="Drop"))

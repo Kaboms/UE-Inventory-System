@@ -2,23 +2,21 @@
 #include "Inventory/Containers/ContainerItemBase.h"
 #include "Inventory/ItemData.h"
 #include "Equipment/EquipmentContainer.h"
+#include "Inventory/ItemBase.h"
 
 void UEquipSlotBase::Equip(UObject* Instigator, UContainerItemBase* ContainerItemToEquip)
 {
-    if (IsValid(ContainerItemToEquip))
+    if (IsValid(ContainerItem) && ContainerItem->GetItem()->Implements<UEquipableInterface>())
     {
-        if (IEquipableInterface* EquipableItem = Cast<IEquipableInterface>(ContainerItemToEquip->GetItem()))
-        {
-            EquipableItem->TakeOff();
-        }
+        IEquipableInterface::Execute_TakeOff(ContainerItem->GetItem());
     }
 
     ContainerItem = ContainerItemToEquip;
     ContainerItem->Container = EquipmentContainer;
 
-    if (IEquipableInterface* EquipableItem = Cast<IEquipableInterface>(ContainerItem->GetItem()))
+    if (ContainerItem->GetItem()->Implements<UEquipableInterface>())
     {
-        EquipableItem->Equip(Instigator);
+        IEquipableInterface::Execute_Equip(ContainerItem->GetItem(), Instigator);
     }
 
     OnEquiped.Broadcast();
@@ -26,7 +24,7 @@ void UEquipSlotBase::Equip(UObject* Instigator, UContainerItemBase* ContainerIte
 
 bool UEquipSlotBase::CanEquip(UItemData* ItemData)
 {
-    return !IsValid(ContainerItem) && ItemData->Type.HasTag(RequiredItemType);
+    return ItemData->Type.HasTag(RequiredItemType);
 }
 
 bool UEquipSlotBase::CanEquipContainerItem(UContainerItemBase* ContainerItemToEquip)
@@ -40,12 +38,9 @@ bool UEquipSlotBase::CanEquipContainerItem(UContainerItemBase* ContainerItemToEq
 
 void UEquipSlotBase::TakeOff()
 {
-    if (IsValid(ContainerItem))
+    if (IsValid(ContainerItem) && ContainerItem->GetItem()->Implements<UEquipableInterface>())
     {
-        if (IEquipableInterface* EquipableItem = Cast<IEquipableInterface>(ContainerItem->GetItem()))
-        {
-            EquipableItem->TakeOff();
-        }
+        IEquipableInterface::Execute_TakeOff(ContainerItem->GetItem());
 
         ContainerItem = nullptr;
     }
@@ -55,11 +50,8 @@ void UEquipSlotBase::TakeOff()
 
 void UEquipSlotBase::Select()
 {
-    if (IsValid(ContainerItem))
+    if (IsValid(ContainerItem) && ContainerItem->GetItem()->Implements<UEquipableInterface>())
     {
-        if (IEquipableInterface* EquipableItem = Cast<IEquipableInterface>(ContainerItem->GetItem()))
-        {
-            EquipableItem->Select();
-        }
+        IEquipableInterface::Execute_Select(ContainerItem->GetItem());
     }
 }
