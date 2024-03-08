@@ -3,8 +3,6 @@
 #include "Inventory/ItemBase.h"
 #include "Inventory/ItemData.h"
 
-PRAGMA_DISABLE_OPTIMIZATION
-
 bool UGridItemsContainer::FindFreePosition(UContainerItemBase* ContainerItem, FVector2f& Position)
 {
     while (ItemsMap.Contains(Position))
@@ -230,5 +228,3 @@ bool UGridItemsContainer::FindContainerItemPosition(UContainerItemBase* Containe
 
     return false;
 }
-
-PRAGMA_ENABLE_OPTIMIZATION
