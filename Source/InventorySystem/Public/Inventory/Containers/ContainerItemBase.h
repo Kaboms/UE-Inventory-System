@@ -65,7 +65,7 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetAmount(int32 NewAmount);
 
-	UFUNCTION(BlueprintPure)
+	UFUNCTION(BlueprintGetter)
 	UItemBase* GetItem();
 
 	UFUNCTION(BlueprintGetter)
@@ -98,7 +98,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintGetter = GetAmount, BlueprintSetter = SetAmount)
 	int32 Amount = 1;
 
-	UPROPERTY()
+	// If null - item instance will generate from item data
+	UPROPERTY(EditAnywhere, BlueprintGetter = GetItem, meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UItemBase> Item;
 
 	UPROPERTY(EditAnywhere, BlueprintGetter = GetItemData, meta = (ExposeOnSpawn = "true"))

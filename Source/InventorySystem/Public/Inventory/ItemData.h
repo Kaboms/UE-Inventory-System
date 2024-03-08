@@ -39,6 +39,9 @@ public:
 	TSubclassOf<AActor> ItemPickupClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AActor> ItemActorClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UItemBase> ItemInstanceClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory Slot")

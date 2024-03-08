@@ -41,9 +41,9 @@ void UEquipSlotBase::TakeOff()
     if (IsValid(ContainerItem) && ContainerItem->GetItem()->Implements<UEquipableInterface>())
     {
         IEquipableInterface::Execute_TakeOff(ContainerItem->GetItem());
-
-        ContainerItem = nullptr;
     }
+
+    ContainerItem = nullptr;
 
     OnTakeOff.Broadcast();
 }

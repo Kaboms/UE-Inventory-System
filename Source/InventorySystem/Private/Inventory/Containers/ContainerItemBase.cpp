@@ -125,6 +125,10 @@ UItemBase* UContainerItemBase::GetItem()
     {
         Item = ItemData->ConstructItemInstance(this);
     }
+    else if (!IsValid(Item->ItemData))
+    {
+        Item->ItemData = GetItemData();
+    }
 
     return Item;
 }

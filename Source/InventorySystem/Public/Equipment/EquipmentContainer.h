@@ -20,13 +20,14 @@ class INVENTORYSYSTEM_API UEquipmentContainer : public UItemsContainerBase
 public:
 	void Init();
 
-	virtual bool AddItem(UItemBase* Item) override;
+	virtual bool AddContainerItem(UContainerItemBase* ContainerItem);
 
-	virtual void AddContainerItem(UContainerItemBase* ContainerItem);
-
-	virtual void RemoveContainerItem(UContainerItemBase* ContainerItem);
+	virtual bool RemoveContainerItem(UContainerItemBase* ContainerItem);
 
 	virtual TArray<UContainerItemBase*> GetContainerItems() override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool MoveToSlot(UEquipSlotBase* ContainerItemSlot, UEquipSlotBase* NewSlot);
 
 public:
 	UPROPERTY(EditAnywhere, Instanced)

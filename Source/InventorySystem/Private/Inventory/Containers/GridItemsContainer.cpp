@@ -5,26 +5,12 @@
 
 PRAGMA_DISABLE_OPTIMIZATION
 
-bool UGridItemsContainer::AddItem(UItemBase* Item)
-{
-    FVector2f Position(0, 0);
-
-    return AddContainerItemFromPosition(Item, Position);
-}
-
-bool UGridItemsContainer::AddContainerItemFromPosition(UItemBase* Item, FVector2f& Position)
-{
-    UContainerItemBase* ContainerItemBase = CreateContainerItem(Item);
-
-    return AddContainerItemFromPosition(ContainerItemBase, Position);
-}
-
-bool UGridItemsContainer::FindFreePosition(UItemBase* Item, FVector2f& Position)
+bool UGridItemsContainer::FindFreePosition(UContainerItemBase* ContainerItem, FVector2f& Position)
 {
     while (ItemsMap.Contains(Position))
     {
         UContainerItemBase* ExistedContainerItem = ItemsMap[Position];
-        if (ExistedContainerItem->CanAddItem() && ExistedContainerItem->GetItemData()->ID == Item->ItemData->ID)
+        if (ExistedContainerItem->CanAddItem() && ExistedContainerItem->GetItemData()->ID == ContainerItem->GetItemData()->ID)
         {
             return true;
         }
@@ -38,13 +24,12 @@ bool UGridItemsContainer::FindFreePosition(UItemBase* Item, FVector2f& Position)
     return true;
 }
 
-bool UGridItemsContainer::AddItems(TArray<UItemBase*> Items)
+bool UGridItemsContainer::AddContainerItems(TArray<UContainerItemBase*> ContainerItems)
 {
     FVector2f Position(0, 0);
-
-    for (UItemBase* Item : Items)
+    for (UContainerItemBase* ContainerItem : ContainerItems)
     {
-        if (!AddContainerItemFromPosition(Item, Position))
+        if (!AddContainerItemFromPosition(ContainerItem, Position))
         {
             return false;
         }
@@ -53,10 +38,10 @@ bool UGridItemsContainer::AddItems(TArray<UItemBase*> Items)
     return true;
 }
 
-void UGridItemsContainer::AddContainerItem(UContainerItemBase* ContainerItem)
+bool UGridItemsContainer::AddContainerItem(UContainerItemBase* ContainerItem)
 {
     FVector2f Position(0, 0);
-    AddContainerItemFromPosition(ContainerItem, Position);
+    return AddContainerItemFromPosition(ContainerItem, Position);
 }
 
 bool UGridItemsContainer::AddContainerItemToPosition(UContainerItemBase* ContainerItem, FVector2f Position)
@@ -97,7 +82,7 @@ void UGridItemsContainer::RemoveContainerItemFromPosition(FVector2f Position)
 
 bool UGridItemsContainer::AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position)
 {
-    while (FindFreePosition(ContainerItem->GetItem(), Position))
+    while (FindFreePosition(ContainerItem, Position))
     {
         if (AddContainerItemToPosition(ContainerItem, Position))
         {
@@ -108,13 +93,17 @@ bool UGridItemsContainer::AddContainerItemFromPosition(UContainerItemBase* Conta
     return false;
 }
 
-void UGridItemsContainer::RemoveContainerItem(UContainerItemBase* ContainerItem)
+bool UGridItemsContainer::RemoveContainerItem(UContainerItemBase* ContainerItem)
 {
     FVector2f Position;
 
-    FindContainerItemPosition(ContainerItem, Position);
+    if (FindContainerItemPosition(ContainerItem, Position))
+    {
+        RemoveContainerItemFromPosition(Position);
+        return true;
+    }
 
-    RemoveContainerItemFromPosition(Position);
+    return false;
 }
 
 void UGridItemsContainer::InitDefaultItems()
@@ -213,7 +202,7 @@ bool UGridItemsContainer::MoveItemByPosition(FVector2f ItemPosition, FVector2f N
         }
     }
 
-    return true;
+    return false;
 }
 
 void UGridItemsContainer::SwapItemsPositions(FVector2f A, FVector2f B)

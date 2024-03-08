@@ -5,7 +5,8 @@
 
 bool UItemsContainerBase::AddItem(UItemBase* Item)
 {
-    return ReceiveAddItem(Item);
+    UContainerItemBase* ContainerItem = CreateContainerItem(Item);
+    return AddContainerItem(ContainerItem);
 }
 
 bool UItemsContainerBase::AddItems(TArray<UItemBase*> Items)
@@ -23,7 +24,8 @@ bool UItemsContainerBase::AddItems(TArray<UItemBase*> Items)
 
 bool UItemsContainerBase::AddItemData(UItemData* ItemData)
 {
-    return AddItem(UItemData::ConstructItemInstance(this, ItemData));
+    UContainerItemBase* ContainerItem = CreateContainerItemFromData(ItemData);
+    return AddContainerItem(ContainerItem);
 }
 
 bool UItemsContainerBase::AddItemsData(TArray<UItemData*> ItemsData)
@@ -47,21 +49,35 @@ void UItemsContainerBase::InitDefaultItems()
     }
 }
 
-void UItemsContainerBase::AddContainerItem(UContainerItemBase* ContainerItem)
+bool UItemsContainerBase::AddContainerItem(UContainerItemBase* ContainerItem)
 {
-    ReceiveAddContainerItem(ContainerItem);
+    return ReceiveAddContainerItem(ContainerItem);
 }
 
-void UItemsContainerBase::RemoveContainerItem(UContainerItemBase* ContainerItem)
+bool UItemsContainerBase::RemoveContainerItem(UContainerItemBase* ContainerItem)
 {
-    ReceiveRemoveContainerItem(ContainerItem);
+    return ReceiveRemoveContainerItem(ContainerItem);
+}
+
+bool UItemsContainerBase::AddContainerItems(TArray<UContainerItemBase*> ContainerItems)
+{
+    return true;
 }
 
 UContainerItemBase* UItemsContainerBase::CreateContainerItem(UItemBase* Item)
 {
     UContainerItemBase* ContainerItem = NewObject<UContainerItemBase>(this);
     ContainerItem->Container = this;
-    ContainerItem->AddItem(Item);
+    ContainerItem->SetItem(Item);
+
+    return ContainerItem;
+}
+
+UContainerItemBase* UItemsContainerBase::CreateContainerItemFromData(UItemData* ItemData)
+{
+    UContainerItemBase* ContainerItem = NewObject<UContainerItemBase>(this);
+    ContainerItem->Container = this;
+    ContainerItem->SetItemData(ItemData);
 
     return ContainerItem;
 }

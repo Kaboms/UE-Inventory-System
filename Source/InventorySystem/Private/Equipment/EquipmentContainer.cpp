@@ -14,23 +14,7 @@ void UEquipmentContainer::Init()
     }
 }
 
-bool UEquipmentContainer::AddItem(UItemBase* Item)
-{
-    Super::AddItem(Item);
-
-    for (auto& SlotPair : Slots)
-    {
-        if (SlotPair.Value->CanEquip(Item->ItemData))
-        {
-            SlotPair.Value->Equip(Owner, CreateContainerItem(Item));
-            return true;
-        }
-    }
-
-    return false;
-}
-
-void UEquipmentContainer::AddContainerItem(UContainerItemBase* ContainerItem)
+bool UEquipmentContainer::AddContainerItem(UContainerItemBase* ContainerItem)
 {
     for (auto& SlotPair : Slots)
     {
@@ -38,12 +22,14 @@ void UEquipmentContainer::AddContainerItem(UContainerItemBase* ContainerItem)
         {
             SlotPair.Value->Equip(Owner, ContainerItem);
             OnEquipedToSlot.Broadcast(SlotPair.Key);
-            break;
+            return true;
         }
     }
+
+    return false;
 }
 
-void UEquipmentContainer::RemoveContainerItem(UContainerItemBase* ContainerItem)
+bool UEquipmentContainer::RemoveContainerItem(UContainerItemBase* ContainerItem)
 {
     for (auto& SlotPair : Slots)
     {
@@ -51,9 +37,10 @@ void UEquipmentContainer::RemoveContainerItem(UContainerItemBase* ContainerItem)
         {
             SlotPair.Value->TakeOff();
             OnTakeOffFromSlot.Broadcast(SlotPair.Key);
-            break;
+            return true;
         }
     }
+    return false;
 }
 
 TArray<UContainerItemBase*> UEquipmentContainer::GetContainerItems()
@@ -70,4 +57,28 @@ TArray<UContainerItemBase*> UEquipmentContainer::GetContainerItems()
     }
 
     return Result;
+}
+
+bool UEquipmentContainer::MoveToSlot(UEquipSlotBase* ContainerItemSlot, UEquipSlotBase* NewSlot)
+{
+    UContainerItemBase* ContainerItem = ContainerItemSlot->ContainerItem;
+    if (IsValid(ContainerItem))
+    {
+        UContainerItemBase* NewSlotContainerItem = NewSlot->ContainerItem;
+        if (IsValid(NewSlotContainerItem))
+        {
+            NewSlotContainerItem->MergeOrSwap(ContainerItem);
+
+            // If not all item merged we should return it to previous pos
+            return ContainerItem->GetAmount() == 0;
+        }
+        else if (NewSlot->CanEquip(ContainerItem->GetItemData()))
+        {
+            ContainerItemSlot->TakeOff();
+            NewSlot->Equip(Owner, ContainerItem);
+            return true;
+        }
+    }
+
+    return false;
 }

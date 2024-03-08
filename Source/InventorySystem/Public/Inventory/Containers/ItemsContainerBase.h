@@ -22,10 +22,10 @@ public:
 	// Return True on success addition.
 	// Return false if here is no enought space or something like this
 	UFUNCTION(BlueprintCallable)
-	virtual bool AddItem(UItemBase* Item);
+	bool AddItem(UItemBase* Item);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool AddItems(TArray<UItemBase*> Items);
+	bool AddItems(TArray<UItemBase*> Items);
 
 	UFUNCTION(BlueprintCallable)
 	bool AddItemData(UItemData* ItemData);
@@ -37,13 +37,19 @@ public:
 	virtual void InitDefaultItems();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void AddContainerItem(UContainerItemBase* ContainerItem);
+	virtual bool AddContainerItem(UContainerItemBase* ContainerItem);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void RemoveContainerItem(UContainerItemBase* ContainerItem);
+	virtual bool RemoveContainerItem(UContainerItemBase* ContainerItem);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool AddContainerItems(TArray<UContainerItemBase*> ContainerItems);
 
 	UFUNCTION(BlueprintCallable)
 	virtual UContainerItemBase* CreateContainerItem(UItemBase* Item);
+
+	UFUNCTION(BlueprintCallable)
+	virtual UContainerItemBase* CreateContainerItemFromData(UItemData* ItemData);
 
 	UFUNCTION(BlueprintCallable)
 	virtual UContainerItemBase* FindContainerItem(UItemData* ItemData);
@@ -58,9 +64,6 @@ public:
 	virtual void Close();
 
 protected:
-	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Add Item"))
-	bool ReceiveAddItem(UItemBase* Item);
-
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Add Container Item"))
 	bool ReceiveAddContainerItem(UContainerItemBase* ContainerItem);
 

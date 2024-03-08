@@ -25,11 +25,9 @@ class INVENTORYSYSTEM_API UGridItemsContainer : public UItemsContainerBase
 	GENERATED_BODY()
 
 public:
-	virtual bool AddItem(UItemBase* Item) override;
+	virtual bool AddContainerItems(TArray<UContainerItemBase*> ContainerItems) override;
 
-	virtual bool AddItems(TArray<UItemBase*> Items) override;
-
-	virtual void AddContainerItem(UContainerItemBase* ContainerItem) override;
+	virtual bool AddContainerItem(UContainerItemBase* ContainerItem) override;
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool AddContainerItemToPosition(UContainerItemBase* ContainerItem, FVector2f Position);
@@ -40,7 +38,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position);
 
-	virtual void RemoveContainerItem(UContainerItemBase* ContainerItem) override;
+	virtual bool RemoveContainerItem(UContainerItemBase* ContainerItem) override;
 
 	virtual void InitDefaultItems() override;
 
@@ -73,8 +71,7 @@ public:
 	bool IsPositionValid(FVector2f Position);
 
 protected:
-	bool AddContainerItemFromPosition(UItemBase* Item, FVector2f& Position);
-	bool FindFreePosition(UItemBase* Item, FVector2f& Position);
+	bool FindFreePosition(UContainerItemBase* ContainerItem, FVector2f& Position);
 
 public:
 	// Setup 0 to infinity 
