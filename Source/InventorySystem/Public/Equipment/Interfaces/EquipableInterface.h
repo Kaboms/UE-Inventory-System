@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "EquipableInterface.generated.h"
 
+// Implment for any item that may be equiped
 UINTERFACE(MinimalAPI, Blueprintable)
 class UEquipableInterface : public UInterface
 {

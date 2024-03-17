@@ -51,12 +51,22 @@ void UItemsContainerBase::InitDefaultItems()
 
 bool UItemsContainerBase::AddContainerItem(UContainerItemBase* ContainerItem)
 {
-    return ReceiveAddContainerItem(ContainerItem);
+    if (ReceiveAddContainerItem(ContainerItem))
+    {
+        OnContainerItemAdded.Broadcast(ContainerItem);
+        return true;
+    }
+    return false;
 }
 
 bool UItemsContainerBase::RemoveContainerItem(UContainerItemBase* ContainerItem)
 {
-    return ReceiveRemoveContainerItem(ContainerItem);
+    if (ReceiveRemoveContainerItem(ContainerItem))
+    {
+        OnContainerItemRemoved.Broadcast(ContainerItem);
+        return true;
+    }
+    return false;
 }
 
 bool UItemsContainerBase::AddContainerItems(TArray<UContainerItemBase*> ContainerItems)

@@ -10,6 +10,9 @@ class UEquipSlot;
 class UItemBase;
 class UItemsContainerBase;
 
+// All inventory login contained in UItemsContainerBase classes.
+// Container items can take the access to actor from this component.
+// This component may have several item containers.
 UCLASS(BlueprintType, Blueprintable, Meta = (BlueprintSpawnableComponent))
 class INVENTORYSYSTEM_API UInventoryComponentBase : public UActorComponent
 {

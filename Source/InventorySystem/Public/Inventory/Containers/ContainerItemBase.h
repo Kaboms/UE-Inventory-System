@@ -10,6 +10,7 @@ class UItemBase;
 class UItemData;
 class UItemsContainerBase;
 
+//Container item with ItemData and
 UCLASS(Blueprintable, BlueprintType, DefaultToInstanced, EditInlineNew)
 class INVENTORYSYSTEM_API UContainerItemBase : public UObject
 {
@@ -19,6 +20,7 @@ public:
 	UFUNCTION(BlueprintCallable, Meta = (DefaultToSelf = "Outer", DeterminesOutputType = "ContainerItemClass"))
 	static UContainerItemBase* ConstructContainerItem(UObject* Outer, UItemData* ItemData, TSubclassOf<UContainerItemBase> ContainerItemClass);
 
+	// Swap Item and ItemData with other ContainerItem
 	UFUNCTION(BlueprintCallable)
 	void Swap(UContainerItemBase* OtherContainerItem);
 
@@ -71,6 +73,7 @@ public:
 	UFUNCTION(BlueprintGetter)
 	UItemData* GetItemData();
 
+	// Return true if here is no Item and Amount less the item StackSize
 	UFUNCTION(BlueprintPure)
 	bool CanAddItem();
 

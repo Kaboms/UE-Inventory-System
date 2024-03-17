@@ -66,7 +66,8 @@ bool UGridItemsContainer::AddContainerItemToPosition(UContainerItemBase* Contain
 
     ContainerItem->Container = this;
 
-    OnContainerItemAdded.Broadcast(Position);
+    OnGridContainerItemAdded.Broadcast(Position);
+    OnContainerItemAdded.Broadcast(ContainerItem);
     return true;
 }
 
@@ -75,7 +76,8 @@ void UGridItemsContainer::RemoveContainerItemFromPosition(FVector2f Position)
     UContainerItemBase* ContainerItem = ItemsMap[Position];
     ItemsMap.Remove(Position);
 
-    OnContainerItemRemoved.Broadcast(Position);
+    OnGridContainerItemRemoved.Broadcast(Position);
+    OnContainerItemRemoved.Broadcast(ContainerItem);
 }
 
 bool UGridItemsContainer::AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position)

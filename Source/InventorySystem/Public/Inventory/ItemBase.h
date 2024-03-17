@@ -7,6 +7,7 @@
 
 class UItemData;
 
+// Inherit from this class and implement login and behavioud of item.
 UCLASS(Blueprintable, BlueprintType, DefaultToInstanced, EditInlineNew)
 class INVENTORYSYSTEM_API UItemBase : public UWorldObject
 {

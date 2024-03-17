@@ -6,18 +6,18 @@
 
 #include "GridItemsContainer.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnContainerItemAdded, FVector2f, ItemPos);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnContainerItemRemoved, FVector2f, ItemPos);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGridContainerItemAdded, FVector2f, ItemPos);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGridContainerItemRemoved, FVector2f, ItemPos);
 
 UENUM(BlueprintType)
 enum class EGridContainerDirection : uint8
 {
-	Horizontal,
-	Vertical
+	Horizontal, // Column by column
+	Vertical // Row by row
 };
 
 /**
- * 
+ * Grid containers with free or fixes items positions.
  */
 UCLASS()
 class INVENTORYSYSTEM_API UGridItemsContainer : public UItemsContainerBase
@@ -35,6 +35,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void RemoveContainerItemFromPosition(FVector2f Position);
 
+	// Find free position starded from Position and ContainerItem to it.
+	// Return false if here is no free position to place item.
 	UFUNCTION(BlueprintCallable)
 	virtual bool AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position);
 
@@ -68,6 +70,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SwapItemsPositions(FVector2f A, FVector2f B);
 
+	// Is Position >= 0 and < MaxRows and MaxCollumns
+	UFUNCTION(BlueprintPure)
 	bool IsPositionValid(FVector2f Position);
 
 protected:
@@ -82,6 +86,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 MaxCollumns = 0;
 
+	//Horizontal - Column by column
+	//Vertical - Row by row
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	EGridContainerDirection FillDirection = EGridContainerDirection::Vertical;
 
@@ -89,8 +95,8 @@ public:
 	TMap<FVector2f, UContainerItemBase*> ItemsMap;
 
 	UPROPERTY(BlueprintAssignable, Category = "Event Dispatcher")
-	FOnContainerItemAdded OnContainerItemAdded;
+	FOnGridContainerItemAdded OnGridContainerItemAdded;
 
 	UPROPERTY(BlueprintAssignable, Category = "Event Dispatcher")
-	FOnContainerItemRemoved OnContainerItemRemoved;
+	FOnGridContainerItemRemoved OnGridContainerItemRemoved;
 };

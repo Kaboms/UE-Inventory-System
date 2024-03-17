@@ -10,15 +10,22 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FContainerOpened);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FContainerClosed);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnContainerItemAdded, class UContainerItemBase*, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnContainerItemRemoved, class UContainerItemBase*, Item);
+
 class UItemBase;
 class UItemData;
 
+// Abstract class for any containers in the game.
+// Idea to have own class for containers implemented from UObject instead of implement all login in some UActorComponent is very simple.
+// If implement all logic in ActorComponent we cannot have nested containers (container with containers)
 UCLASS(Abstract, Blueprintable, BlueprintType, DefaultToInstanced, EditInlineNew)
 class INVENTORYSYSTEM_API UItemsContainerBase : public UWorldObject
 {
 	GENERATED_BODY()
 
 public:
+	// Create ContainerItem with Item and add it to Container
 	// Return True on success addition.
 	// Return false if here is no enought space or something like this
 	UFUNCTION(BlueprintCallable)
@@ -27,6 +34,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool AddItems(TArray<UItemBase*> Items);
 
+	// Create ContainerItem with ItemData and add it to Container
+	// UItemBase instance will not create in this case.
 	UFUNCTION(BlueprintCallable)
 	bool AddItemData(UItemData* ItemData);
 
@@ -89,4 +98,10 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FContainerClosed OnClose;
+
+	UPROPERTY(BlueprintAssignable, Category = "Event Dispatcher")
+	FOnContainerItemAdded OnContainerItemAdded;
+
+	UPROPERTY(BlueprintAssignable, Category = "Event Dispatcher")
+	FOnContainerItemRemoved OnContainerItemRemoved;
 };
