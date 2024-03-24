@@ -3,8 +3,8 @@
 
 void UEquipmentComponentBase::BeginPlay()
 {
-    Super::BeginPlay();
-
     EquipmentContainer->Owner = GetOwner();
     EquipmentContainer->Init();
+
+    Super::BeginPlay();
 }
