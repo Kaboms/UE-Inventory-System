@@ -76,7 +76,7 @@ void UContainerItemBase::DropAll()
 
 void UContainerItemBase::Remove(int32 AmountToRemove)
 {
-    Amount -= FMath::Clamp(Amount - AmountToRemove, 0, Amount);
+    Amount = FMath::Clamp(Amount - AmountToRemove, 0, Amount);
 
     if (Amount == 0)
     {
