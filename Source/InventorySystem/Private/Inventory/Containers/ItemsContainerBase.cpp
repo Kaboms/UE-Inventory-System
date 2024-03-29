@@ -125,3 +125,8 @@ void UItemsContainerBase::Close()
 
     OnClose.Broadcast();
 }
+
+bool UItemsContainerBase::CanSwapItems(UContainerItemBase* ContainerItem, UContainerItemBase* OtherItem)
+{
+    return true;
+}

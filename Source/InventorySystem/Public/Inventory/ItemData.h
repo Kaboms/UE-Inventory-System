@@ -61,4 +61,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory Slot")
 	int32 StackSize = 1;
+
+	inline bool operator== (const UItemData* Other)
+	{
+		return ID == Other->ID;
+	}
 };

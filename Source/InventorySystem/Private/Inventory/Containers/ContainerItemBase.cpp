@@ -11,15 +11,21 @@ UContainerItemBase* UContainerItemBase::ConstructContainerItem(UObject* Outer, U
     return ContainerItemBase;
 }
 
-void UContainerItemBase::Swap(UContainerItemBase* OtherContainerItem)
+bool UContainerItemBase::Swap(UContainerItemBase* OtherContainerItem)
 {
-    UContainerItemBase* Temp = DuplicateObject(OtherContainerItem, NULL);
-    OtherContainerItem->Item = Item;
-    OtherContainerItem->SetItemData(ItemData, Amount);
+    if (Container->CanSwapItems(this, OtherContainerItem) && OtherContainerItem->Container->CanSwapItems(OtherContainerItem, this))
+    {
+        UContainerItemBase* Temp = DuplicateObject(OtherContainerItem, NULL);
+        OtherContainerItem->Item = Item;
+        OtherContainerItem->SetItemData(ItemData, Amount);
 
-    Item = Temp->Item;
-    SetItemData(Temp->GetItemData(), Temp->GetAmount());
+        Item = Temp->Item;
+        SetItemData(Temp->GetItemData(), Temp->GetAmount());
 
+        return true;
+    }
+
+    return false;
 }
 
 void UContainerItemBase::AddItem(UItemBase* InItem, int32 InAmount)
@@ -145,7 +151,7 @@ bool UContainerItemBase::CanAddItem()
 
 bool UContainerItemBase::IsItemSameType(UContainerItemBase* OtherItem)
 {
-    return OtherItem->GetItemData()->ID == GetItemData()->ID;
+    return OtherItem->GetItemData()== GetItemData();
 }
 
 bool UContainerItemBase::MergeWithOther(UContainerItemBase* OtherContainerItem)
@@ -170,16 +176,19 @@ bool UContainerItemBase::MergeWithOther(UContainerItemBase* OtherContainerItem)
     return false;
 }
 
-void UContainerItemBase::MergeOrSwap(UContainerItemBase* OtherContainerItem)
+bool UContainerItemBase::MergeOrSwap(UContainerItemBase* OtherContainerItem)
 {
     if (IsItemSameType(OtherContainerItem))
     {
-        MergeWithOther(OtherContainerItem);
+        return MergeWithOther(OtherContainerItem);
     }
     else
     {
         Swap(OtherContainerItem);
+        return true;
     }
+
+    return false;
 }
 
 UContainerItemBase* UContainerItemBase::Split(int32 SplitAmount)

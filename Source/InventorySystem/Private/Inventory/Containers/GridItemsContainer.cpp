@@ -8,7 +8,7 @@ bool UGridItemsContainer::FindFreePosition(UContainerItemBase* ContainerItem, FV
     while (ItemsMap.Contains(Position))
     {
         UContainerItemBase* ExistedContainerItem = ItemsMap[Position];
-        if (ExistedContainerItem->CanAddItem() && ExistedContainerItem->GetItemData()->ID == ContainerItem->GetItemData()->ID)
+        if (ExistedContainerItem->CanAddItem() && ExistedContainerItem->GetItemData() == ContainerItem->GetItemData())
         {
             return true;
         }
@@ -54,7 +54,7 @@ bool UGridItemsContainer::AddContainerItemToPosition(UContainerItemBase* Contain
     else
     {
         UContainerItemBase* OtherContainerItem = ItemsMap[Position];
-        if (OtherContainerItem->GetItemData()->ID == ContainerItem->GetItemData()->ID)
+        if (OtherContainerItem->GetItemData() == ContainerItem->GetItemData())
         {
             return OtherContainerItem->MergeWithOther(ContainerItem);
         }

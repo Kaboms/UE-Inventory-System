@@ -29,6 +29,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool MoveToSlot(UEquipSlotBase* ContainerItemSlot, UEquipSlotBase* NewSlot);
 
+	virtual bool CanSwapItems(UContainerItemBase* ContainerItem, UContainerItemBase* OtherItem);
+
+	UFUNCTION(BlueprintPure)
+	UEquipSlotBase* FindFreeEquipSlot(UContainerItemBase* ContainerItem);
+
+	UFUNCTION(BlueprintPure)
+	UEquipSlotBase* GetEquipSlot(UContainerItemBase* ContainerItem);
+
 public:
 	UPROPERTY(EditAnywhere, Instanced)
 	TArray<UEquipSlotBase*> InstancedSlots;

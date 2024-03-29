@@ -72,6 +72,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void Close();
 
+	UFUNCTION(BlueprintPure)
+	virtual bool CanSwapItems(UContainerItemBase* ContainerItem, UContainerItemBase* OtherItem);
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Add Container Item"))
 	bool ReceiveAddContainerItem(UContainerItemBase* ContainerItem);

@@ -22,7 +22,7 @@ public:
 
 	// Swap Item and ItemData with other ContainerItem
 	UFUNCTION(BlueprintCallable)
-	void Swap(UContainerItemBase* OtherContainerItem);
+	bool Swap(UContainerItemBase* OtherContainerItem);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AddItem(UItemBase* Item, int32 Amount = 1);
@@ -55,8 +55,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool MergeWithOther(UContainerItemBase* OtherContainerItem);
 
+	// If items same type - try merge. After merge remainder items stay where they are.
+	// If items diffirent types - try swap them
 	UFUNCTION(BlueprintCallable)
-	void MergeOrSwap(UContainerItemBase* OtherContainerItem);
+	bool MergeOrSwap(UContainerItemBase* OtherContainerItem);
 
 	UFUNCTION(BlueprintCallable)
 	UContainerItemBase* Split(int32 SplitAmount);
@@ -73,7 +75,7 @@ public:
 	UFUNCTION(BlueprintGetter)
 	UItemData* GetItemData();
 
-	// Return true if here is no Item and Amount less the item StackSize
+	// Return true if here is no Item or current items Amount less the item StackSize
 	UFUNCTION(BlueprintPure)
 	bool CanAddItem();
 

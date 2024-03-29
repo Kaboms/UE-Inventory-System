@@ -20,7 +20,7 @@ class INVENTORYSYSTEM_API UEquipSlotBase : public UObject
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void Equip(UObject* Instigator, UContainerItemBase* ContainerItemToEquip);
+	bool Equip(UObject* Instigator, UContainerItemBase* ContainerItemToEquip);
 
 	UFUNCTION(BlueprintPure)
 	bool CanEquip(UItemData* ItemData);

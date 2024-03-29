@@ -16,30 +16,33 @@ void UEquipmentContainer::Init()
 
 bool UEquipmentContainer::AddContainerItem(UContainerItemBase* ContainerItem)
 {
-    for (auto& SlotPair : Slots)
+    while (true)
     {
-        if (SlotPair.Value->CanEquip(ContainerItem->GetItemData()))
+        if (UEquipSlotBase* EquipSlot = FindFreeEquipSlot(ContainerItem))
         {
-            SlotPair.Value->Equip(Owner, ContainerItem);
-            OnEquipedToSlot.Broadcast(SlotPair.Key);
-            return true;
+            if (EquipSlot->Equip(Owner, ContainerItem))
+            {
+                OnEquipedToSlot.Broadcast(EquipSlot->SlotTag);
+                return true;
+            }
+        }
+        else
+        {
+            break;
         }
     }
-
     return false;
 }
 
 bool UEquipmentContainer::RemoveContainerItem(UContainerItemBase* ContainerItem)
 {
-    for (auto& SlotPair : Slots)
+    if (UEquipSlotBase* EquipSlot = GetEquipSlot(ContainerItem))
     {
-        if (SlotPair.Value->ContainerItem == ContainerItem)
-        {
-            SlotPair.Value->TakeOff();
-            OnTakeOffFromSlot.Broadcast(SlotPair.Key);
-            return true;
-        }
+        EquipSlot->TakeOff();
+        OnTakeOffFromSlot.Broadcast(EquipSlot->SlotTag);
+        return true;
     }
+
     return false;
 }
 
@@ -82,3 +85,39 @@ bool UEquipmentContainer::MoveToSlot(UEquipSlotBase* ContainerItemSlot, UEquipSl
 
     return false;
 }
+
+bool UEquipmentContainer::CanSwapItems(UContainerItemBase* ContainerItem, UContainerItemBase* OtherItem)
+{
+    if (UEquipSlotBase* EquipSlot = GetEquipSlot(ContainerItem))
+    {
+        return EquipSlot->CanEquip(OtherItem->GetItemData());
+    }
+    return false;
+}
+
+UEquipSlotBase* UEquipmentContainer::FindFreeEquipSlot(UContainerItemBase* ContainerItem)
+{
+    for (auto& SlotPair : Slots)
+    {
+        if (SlotPair.Value->CanEquip(ContainerItem->GetItemData()))
+        {
+            return SlotPair.Value;
+        }
+    }
+
+    return nullptr;
+}
+
+UEquipSlotBase* UEquipmentContainer::GetEquipSlot(UContainerItemBase* ContainerItem)
+{
+    for (auto& SlotPair : Slots)
+    {
+        if (SlotPair.Value->ContainerItem == ContainerItem)
+        {
+            return SlotPair.Value;
+        }
+    }
+
+    return nullptr;
+}
+

@@ -4,15 +4,33 @@
 #include "Equipment/EquipmentContainer.h"
 #include "Inventory/ItemBase.h"
 
-void UEquipSlotBase::Equip(UObject* Instigator, UContainerItemBase* ContainerItemToEquip)
+bool UEquipSlotBase::Equip(UObject* Instigator, UContainerItemBase* ContainerItemToEquip)
 {
-    if (IsValid(ContainerItem) && ContainerItem->GetItem()->Implements<UEquipableInterface>())
-    {
-        IEquipableInterface::Execute_TakeOff(ContainerItem->GetItem());
-    }
+    if (!CanEquip(ContainerItemToEquip->GetItemData()))
+        return false;
 
-    ContainerItem = ContainerItemToEquip;
-    ContainerItem->Container = EquipmentContainer;
+    if (IsValid(ContainerItem))
+    {
+        if (ContainerItem->IsItemSameType(ContainerItemToEquip))
+        {
+            return ContainerItemToEquip->MergeWithOther(ContainerItemToEquip);
+            // We don't need call Execute_Equip if an item is already equiped
+        }
+        else
+        {
+            if (ContainerItem->GetItem()->Implements<UEquipableInterface>())
+            {
+                IEquipableInterface::Execute_TakeOff(ContainerItem->GetItem());
+            }
+
+            ContainerItemToEquip->Swap(ContainerItem);
+        }
+    }
+    else
+    {
+        ContainerItem = ContainerItemToEquip;
+        ContainerItem->Container = EquipmentContainer;
+    }
 
     if (ContainerItem->GetItem()->Implements<UEquipableInterface>())
     {
@@ -20,11 +38,21 @@ void UEquipSlotBase::Equip(UObject* Instigator, UContainerItemBase* ContainerIte
     }
 
     OnEquiped.Broadcast();
+
+    return true;
 }
 
 bool UEquipSlotBase::CanEquip(UItemData* ItemData)
 {
-    return ItemData->Type.HasTag(RequiredItemType);
+    if (ItemData->Type.HasTag(RequiredItemType))
+    {
+        if (IsValid(ContainerItem))
+        {
+            return ContainerItem->GetItemData() == ItemData && ContainerItem->CanAddItem();
+        }
+        return true;
+    }
+    return false;
 }
 
 bool UEquipSlotBase::CanEquipContainerItem(UContainerItemBase* ContainerItemToEquip)
