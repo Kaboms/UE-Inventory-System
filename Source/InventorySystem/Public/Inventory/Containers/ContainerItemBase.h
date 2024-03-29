@@ -5,6 +5,7 @@
 #include "ContainerItemBase.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FContainerItemUpdated, UContainerItemBase*, ContainerItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FContainerItemAmountChanges, UContainerItemBase*, ContainerItem, int32, NewAmount);
 
 class UItemBase;
 class UItemData;
@@ -97,7 +98,10 @@ public:
 	TObjectPtr<UItemsContainerBase> Container;
 
 	UPROPERTY(BlueprintAssignable, Category = "Event Dispatcher")
-	FContainerItemUpdated OnContainerItemUpdated;
+	FContainerItemUpdated OnUpdated;
+
+	UPROPERTY(BlueprintAssignable, Category = "Event Dispatcher")
+	FContainerItemAmountChanges OnAmountChanges;
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintGetter = GetAmount, BlueprintSetter = SetAmount)

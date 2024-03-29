@@ -63,9 +63,9 @@ void UContainerItemBase::SetItem(UItemBase* NewItem, int32 InAmount)
 void UContainerItemBase::SetItemData(UItemData* InItemData, int32 InAmount)
 {
     ItemData = InItemData;
-    Amount = InAmount;
+    SetAmount(Amount);
 
-    OnContainerItemUpdated.Broadcast(this);
+    OnUpdated.Broadcast(this);
 }
 
 void UContainerItemBase::Drop(int32 AmountToDrop)
@@ -82,12 +82,7 @@ void UContainerItemBase::DropAll()
 
 void UContainerItemBase::Remove(int32 AmountToRemove)
 {
-    Amount = FMath::Clamp(Amount - AmountToRemove, 0, Amount);
-
-    if (Amount == 0)
-    {
-        RemoveFromContainer();
-    }
+    SetAmount(Amount - AmountToRemove);
 
     ReceiveRemove(AmountToRemove);
 }
@@ -117,6 +112,8 @@ void UContainerItemBase::SetAmount(int32 NewAmount)
         Amount = FMath::Clamp(NewAmount, 0, ItemData->StackSize);
 
         checkf(NewAmount <= ItemData->StackSize, TEXT("Items stack overflow"));
+
+        OnAmountChanges.Broadcast(this, Amount);
 
         if (Amount == 0)
         {
