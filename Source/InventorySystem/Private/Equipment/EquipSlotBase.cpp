@@ -13,7 +13,7 @@ bool UEquipSlotBase::Equip(UObject* Instigator, UContainerItemBase* ContainerIte
     {
         if (ContainerItem->IsItemSameType(ContainerItemToEquip))
         {
-            return ContainerItemToEquip->MergeWithOther(ContainerItemToEquip);
+            return ContainerItem->MergeWithOther(ContainerItemToEquip);
             // We don't need call Execute_Equip if an item is already equiped
         }
         else
