@@ -74,6 +74,3 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 .idea/
-Content/FMOD/SonicTerror/.cache/
-Content/FMOD/SonicTerror/.unsaved/
-Content/FMOD/SonicTerror/.user/
