@@ -55,6 +55,11 @@ bool UEquipSlotBase::CanEquip(UItemData* ItemData)
     return false;
 }
 
+bool UEquipSlotBase::HasItem()
+{
+    return IsValid(ContainerItem);
+}
+
 bool UEquipSlotBase::CanEquipContainerItem(UContainerItemBase* ContainerItemToEquip)
 {
     if (IsValid(ContainerItemToEquip))

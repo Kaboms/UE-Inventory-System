@@ -26,7 +26,7 @@ public:
 	bool CanEquip(UItemData* ItemData);
 
 	UFUNCTION(BlueprintPure)
-	bool HasItem() { return IsValid(ContainerItem); }
+	bool HasItem();
 
 	UFUNCTION(BlueprintPure)
 	bool CanEquipContainerItem(UContainerItemBase* ContainerItemToEquip);
