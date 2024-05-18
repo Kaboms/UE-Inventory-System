@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
+#include "Inventory/Containers/ItemsContainerBase.h"
+
 #include "InventoryComponentBase.generated.h"
 
 class UContainerItemBase;
@@ -25,6 +27,16 @@ public:
 	UItemsContainerBase* GetItemsContainer() const { return ItemsContainer; }
 
 protected:
+	virtual void OnContainerOpened();
+	virtual void OnContainerClosed();
+
+protected:
 	UPROPERTY(EditAnywhere, Instanced, BlueprintGetter = GetItemsContainer)
 	TObjectPtr<UItemsContainerBase> ItemsContainer;
+
+	UPROPERTY(BlueprintAssignable)
+	FContainerOpened OnOpen;
+
+	UPROPERTY(BlueprintAssignable)
+	FContainerClosed OnClose;
 };

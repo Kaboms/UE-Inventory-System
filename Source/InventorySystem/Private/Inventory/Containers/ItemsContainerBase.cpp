@@ -130,3 +130,8 @@ bool UItemsContainerBase::CanSwapItems(UContainerItemBase* ContainerItem, UConta
 {
     return true;
 }
+
+bool UItemsContainerBase::IsEmpty()
+{
+    return GetContainerItems().Num() <= 0;
+}

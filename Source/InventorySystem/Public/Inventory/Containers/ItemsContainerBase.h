@@ -75,6 +75,12 @@ public:
 	UFUNCTION(BlueprintPure)
 	virtual bool CanSwapItems(UContainerItemBase* ContainerItem, UContainerItemBase* OtherItem);
 
+	UFUNCTION(BlueprintPure)
+	bool IsEmpty();
+
+	UFUNCTION(BlueprintPure)
+	bool IsNotEmpty() { return !IsEmpty(); };
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Add Container Item"))
 	bool ReceiveAddContainerItem(UContainerItemBase* ContainerItem);
