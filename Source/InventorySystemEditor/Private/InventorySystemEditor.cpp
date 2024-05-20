@@ -2,6 +2,7 @@
 
 #include "InventorySystemEditor.h"
 #include "AssetTypeActions/AssetTypeActions_ItemData.h"
+#include "InventorySystemEditorStyle.h"
 
 #define LOCTEXT_NAMESPACE "FInventorySystemEditorModule"
 
@@ -13,12 +14,15 @@ void FInventorySystemEditorModule::StartupModule()
 
 	AssetTools.RegisterAssetTypeActions(MakeShared<FAssetTypeActions_ItemData>());
 #endif
+
+	FInventorySystemEditorStyle::Register();
 }
 
 void FInventorySystemEditorModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+	FInventorySystemEditorStyle::Unregister();
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -2,6 +2,7 @@
 #include "Inventory/ItemData.h"
 #include "ClassIconFinder.h"
 #include "Styling/SlateIconFinder.h"
+#include "InventorySystemEditorStyle.h"
 
 UClass* FAssetTypeActions_ItemData::GetSupportedClass() const
 {
@@ -10,8 +11,6 @@ UClass* FAssetTypeActions_ItemData::GetSupportedClass() const
 
 const FSlateBrush* FAssetTypeActions_ItemData::GetThumbnailBrush(const FAssetData& InAssetData, const FName InClassName) const
 {
-	///InventorySystem/Icons/T_Item_Dummy.T_Item_Dummy
-
 	FSlateBrush* Icon = nullptr;
 	if (UItemData* ItemData = Cast<UItemData>(InAssetData.GetAsset()))
 	{
@@ -23,5 +22,7 @@ const FSlateBrush* FAssetTypeActions_ItemData::GetThumbnailBrush(const FAssetDat
 		}
 	}
 
-	return Icon ? Icon : FAppStyle::GetNoBrush();
+	FSlateIcon IconBrush = FSlateIcon(FInventorySystemEditorStyle::Get().GetStyleSetName(), "ClassThumbnail.ItemData");
+
+	return Icon ? Icon : IconBrush.GetIcon();
 }

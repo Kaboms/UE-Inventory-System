@@ -22,7 +22,8 @@ public class InventorySystemEditor : ModuleRules
                 "Slate",
                 "SlateCore",
                 "InventorySystem",
-                "UnrealEd"
+                "UnrealEd",
+                "Projects"
             }
             );
 
