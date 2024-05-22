@@ -18,4 +18,8 @@ class IUsableInterface
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void Use(UObject* Instigator);
+
+	// "Use", "Read", "Break" etc.
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	FText GetActionDisplayName();
 };
