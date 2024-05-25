@@ -14,6 +14,8 @@ class INVENTORYSYSTEM_API UItemBase : public UWorldObject
 	GENERATED_BODY()
 
 public:
+	virtual void Init();
+
 	UFUNCTION(BlueprintCallable)
 	virtual bool IsDroppable();
 
@@ -23,6 +25,9 @@ public:
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "IsDroppable"))
 	bool ReceiveIsDroppable();
+
+	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Init"))
+	void ReceiveInit();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (ExposeOnSpawn))

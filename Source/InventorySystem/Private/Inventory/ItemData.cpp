@@ -15,6 +15,7 @@ UItemBase* UItemData::ConstructItemInstance(UObject* Outer)
 {
     UItemBase* ItemBase = NewObject<UItemBase>(Outer, ItemInstanceClass);
     ItemBase->ItemData = this;
+    ItemBase->Init();
 
     return ItemBase;
 }

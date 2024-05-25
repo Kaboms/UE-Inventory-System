@@ -1,5 +1,10 @@
 #include "Inventory/ItemBase.h"
 
+void UItemBase::Init()
+{
+    ReceiveInit();
+}
+
 bool UItemBase::IsDroppable()
 {
     return ReceiveIsDroppable();
