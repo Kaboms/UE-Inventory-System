@@ -11,8 +11,9 @@ void FInventorySystemEditorModule::StartupModule()
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 #if WITH_EDITOR
 	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	EAssetTypeCategories::Type InventoryCategoryBit = AssetTools.RegisterAdvancedAssetCategory(FName(TEXT("Inventory")), LOCTEXT("InventorySystemAssetCategory", "Inventory"));
 
-	AssetTools.RegisterAssetTypeActions(MakeShared<FAssetTypeActions_ItemData>());
+	AssetTools.RegisterAssetTypeActions(MakeShared<FAssetTypeActions_ItemData>(InventoryCategoryBit));
 #endif
 
 	FInventorySystemEditorStyle::Register();
