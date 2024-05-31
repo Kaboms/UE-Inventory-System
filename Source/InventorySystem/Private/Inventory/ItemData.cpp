@@ -19,3 +19,16 @@ UItemBase* UItemData::ConstructItemInstance(UObject* Outer)
 
     return ItemBase;
 }
+
+UItemMetadata* UItemData::FindMetadataByClass(TSubclassOf<UItemMetadata> MetadataClass)
+{
+    for (const auto& MetadataEntry : MetadataEntries)
+    {
+        if (MetadataEntry->IsA(MetadataClass))
+        {
+            return MetadataEntry;
+        }
+    }
+
+    return nullptr;
+}
