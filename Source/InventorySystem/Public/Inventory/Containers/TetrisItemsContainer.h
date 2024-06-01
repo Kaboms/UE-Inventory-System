@@ -12,13 +12,13 @@ class INVENTORYSYSTEM_API UTetrisContainerSlotMetadata : public UItemMetadata
 {
 	GENERATED_BODY()
 
-protected:
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector2f Size;
 	
 	// Use this for exact slot form. By default slot is Rectangle setted by Size property
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FVector2f> Form;
+	TSet<FVector2f> Form;
 };
 
 /**
@@ -31,6 +31,12 @@ class INVENTORYSYSTEM_API UTetrisItemsContainer : public UItemsContainerBase
 
 public:
 	virtual void InitDefaultItems() override;
+
+	UFUNCTION(BlueprintCallable)
+	bool CanPlaceTo(UTetrisContainerSlotMetadata* SlotMetadata, FVector2f SelectedSlotCell, FVector2f TargetSlotCell, UPARAM(Ref) TArray<FVector2f>& OutOccupiedCells);
+
+	UFUNCTION(BlueprintCallable)
+	void PlaceToCell(UContainerItemBase* ContainerItem, FVector2f SelectedSlotCell, FVector2f TargetSlotCell);
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
