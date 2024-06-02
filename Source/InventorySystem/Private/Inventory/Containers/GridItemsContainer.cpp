@@ -3,25 +3,6 @@
 #include "Inventory/ItemBase.h"
 #include "Inventory/ItemData.h"
 
-bool UGridItemsContainer::FindFreePosition(UContainerItemBase* ContainerItem, FVector2f& Position)
-{
-    while (ItemsMap.Contains(Position))
-    {
-        UContainerItemBase* ExistedContainerItem = ItemsMap[Position];
-        if (ExistedContainerItem->CanAddItem() && ExistedContainerItem->GetItemData() == ContainerItem->GetItemData())
-        {
-            return true;
-        }
-
-        if (!MoveToFillDirection(Position))
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 bool UGridItemsContainer::AddContainerItems(TArray<UContainerItemBase*> ContainerItems)
 {
     FVector2f Position(0, 0);
@@ -50,18 +31,11 @@ bool UGridItemsContainer::AddContainerItemToPosition(UContainerItemBase* Contain
     if (!ItemsMap.Contains(Position))
     {
         ItemsMap.Add(Position, ContainerItem);
+        ItemsPositions.Add(ContainerItem, Position);
     }
     else
     {
-        UContainerItemBase* OtherContainerItem = ItemsMap[Position];
-        if (OtherContainerItem->GetItemData() == ContainerItem->GetItemData())
-        {
-            return OtherContainerItem->MergeWithOther(ContainerItem);
-        }
-        else
-        {
-            return false;
-        }
+        return MergeItem(ItemsMap[Position], ContainerItem);
     }
 
     ContainerItem->Container = this;
@@ -75,6 +49,7 @@ void UGridItemsContainer::RemoveContainerItemFromPosition(FVector2f Position)
 {
     UContainerItemBase* ContainerItem = ItemsMap[Position];
     ItemsMap.Remove(Position);
+    ItemsPositions.Remove(ContainerItem);
 
     OnGridContainerItemRemoved.Broadcast(Position);
     OnContainerItemRemoved.Broadcast(ContainerItem);
@@ -112,6 +87,9 @@ void UGridItemsContainer::InitDefaultItems()
 
     for (UContainerItemBase* DefaultItem : DefaultContainerItems)
     {
+        // TODO Default item amount can be greater than item max stack size.
+        DefaultItem->ClampAmount(DefaultItem->GetAmount());
+
         if (!AddContainerItemFromPosition(DefaultItem, Position))
         {
             checkf(false, TEXT("Failed to fill container with default items. Is there enough space in the container?"))
@@ -133,6 +111,7 @@ void UGridItemsContainer::Refill()
     ItemsMap.GenerateValueArray(ContainerItems);
 
     ItemsMap.Empty();
+    ItemsPositions.Empty();
 
     FVector2f Position(0, 0);
 
@@ -190,7 +169,8 @@ bool UGridItemsContainer::MoveItemByPosition(FVector2f ItemPosition, FVector2f N
         if (AddContainerItemToPosition(ContainerItem, NewItemPosition))
         {
             //New position was empty and item added to is succesfull. Remove item from previous pos
-            RemoveContainerItemFromPosition(ItemPosition);
+            ItemsMap.Remove(ItemPosition);
+            OnGridContainerItemRemoved.Broadcast(ItemPosition);
         }
         else
         {
@@ -209,23 +189,40 @@ void UGridItemsContainer::SwapItemsPositions(FVector2f A, FVector2f B)
 {
     ensure(ItemsMap.Contains(A) && ItemsMap.Contains(B));
 
-    ItemsMap[A]->Swap(ItemsMap[B]);
+    UContainerItemBase* AItem = ItemsMap[A];
+    UContainerItemBase* BItem = ItemsMap[B];
+
+    AItem->Swap(BItem);
+
+    ItemsPositions[AItem] = B;
+    ItemsPositions[BItem] = A;
 }
 
-bool UGridItemsContainer::IsPositionValid(FVector2f Position)
+bool UGridItemsContainer::FindFreePosition(UContainerItemBase* ContainerItem, FVector2f& Position)
 {
-    return (MaxCollumns == 0 || Position.X < MaxCollumns) && (MaxRows == 0 || Position.Y < MaxRows);
+    while (ItemsMap.Contains(Position))
+    {
+        UContainerItemBase* ExistedContainerItem = ItemsMap[Position];
+        if (ExistedContainerItem->CanMergeWithItem(ContainerItem))
+        {
+            return true;
+        }
+
+        if (!MoveToFillDirection(Position))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool UGridItemsContainer::FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos)
 {
-    for (auto ContainerItemPair : ItemsMap)
+    if (FVector2f* ItemPos = ItemsPositions.Find(ContainerItem))
     {
-        if (ContainerItemPair.Value == ContainerItem)
-        {
-            OutPos = ContainerItemPair.Key;
-            return true;
-        }
+        OutPos = *ItemPos;
+        return true;
     }
 
     return false;

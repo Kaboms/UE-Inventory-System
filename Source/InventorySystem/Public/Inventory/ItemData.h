@@ -77,4 +77,7 @@ public:
 	{
 		return ID == Other->ID;
 	}
+
+private:
+	TMap<TSubclassOf<UItemMetadata>, UItemMetadata*> MetadataEntriesCache;
 };

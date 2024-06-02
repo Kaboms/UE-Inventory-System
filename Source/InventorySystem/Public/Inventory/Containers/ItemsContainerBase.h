@@ -75,6 +75,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	virtual bool CanSwapItems(UContainerItemBase* ContainerItem, UContainerItemBase* OtherItem);
 
+	UFUNCTION(BlueprintCallable)
+	bool MergeItem(UContainerItemBase* ContainerItem, UContainerItemBase* OtherItem);
+
 	UFUNCTION(BlueprintPure)
 	bool IsEmpty();
 

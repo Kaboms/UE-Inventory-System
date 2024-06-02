@@ -63,7 +63,7 @@ void UContainerItemBase::SetItem(UItemBase* NewItem, int32 InAmount)
 void UContainerItemBase::SetItemData(UItemData* InItemData, int32 InAmount)
 {
     ItemData = InItemData;
-    SetAmount(Amount);
+    SetAmount(InAmount);
 
     OnUpdated.Broadcast(this);
 }
@@ -100,7 +100,7 @@ void UContainerItemBase::RemoveFromContainer()
     }
 }
 
-int32 UContainerItemBase::GetAmount()
+int32 UContainerItemBase::GetAmount() const
 {
     return Amount;
 }
@@ -109,7 +109,7 @@ void UContainerItemBase::SetAmount(int32 NewAmount)
 {
     if (IsValid(ItemData))
     {
-        Amount = FMath::Clamp(NewAmount, 0, ItemData->StackSize);
+        ClampAmount(NewAmount);
 
         checkf(NewAmount <= ItemData->StackSize, TEXT("Items stack overflow"));
 
@@ -136,7 +136,7 @@ UItemBase* UContainerItemBase::GetItem()
     return Item;
 }
 
-UItemData* UContainerItemBase::GetItemData()
+UItemData* UContainerItemBase::GetItemData() const
 {
     return ItemData;
 }
@@ -146,9 +146,19 @@ bool UContainerItemBase::CanAddItem()
     return !IsValid(ItemData) || Amount < ItemData->StackSize;
 }
 
+bool UContainerItemBase::CanMergeWithItem(UContainerItemBase* OtherItem)
+{
+    return IsItemSameType(OtherItem) && CanAddItem();
+}
+
 bool UContainerItemBase::IsItemSameType(UContainerItemBase* OtherItem)
 {
     return OtherItem->GetItemData()== GetItemData();
+}
+
+void UContainerItemBase::ClampAmount(int32 InAmount)
+{
+    Amount = FMath::Clamp(InAmount, 0, ItemData->StackSize);
 }
 
 bool UContainerItemBase::MergeWithOther(UContainerItemBase* OtherContainerItem)

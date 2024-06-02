@@ -65,23 +65,31 @@ public:
 	UContainerItemBase* Split(int32 SplitAmount);
 
 	UFUNCTION(BlueprintGetter)
-	int32 GetAmount();
+	int32 GetAmount() const;
 
 	UFUNCTION(BlueprintSetter)
 	void SetAmount(int32 NewAmount);
 
+	// Get iter instance from item data. If item instance is not exist - create one from item data.
 	UFUNCTION(BlueprintGetter)
 	UItemBase* GetItem();
 
 	UFUNCTION(BlueprintGetter)
-	UItemData* GetItemData();
+	UItemData* GetItemData() const;
 
 	// Return true if here is no Item or current items Amount less the item StackSize
 	UFUNCTION(BlueprintPure)
 	bool CanAddItem();
 
 	UFUNCTION(BlueprintPure)
+	bool CanMergeWithItem(UContainerItemBase* OtherItem);
+
+	UFUNCTION(BlueprintPure)
 	bool IsItemSameType(UContainerItemBase* OtherItem);
+
+	// Clamp current item amount between zero and ItemData->StackSize
+	UFUNCTION(BlueprintCallable)
+	void ClampAmount(int32 InAmount);
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta=(DisplayName="Drop"))

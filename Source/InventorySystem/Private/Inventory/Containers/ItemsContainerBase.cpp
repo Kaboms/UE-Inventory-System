@@ -131,6 +131,18 @@ bool UItemsContainerBase::CanSwapItems(UContainerItemBase* ContainerItem, UConta
     return true;
 }
 
+bool UItemsContainerBase::MergeItem(UContainerItemBase* ContainerItem, UContainerItemBase* OtherItem)
+{
+    if (ContainerItem->IsItemSameType(OtherItem))
+    {
+        return ContainerItem->MergeWithOther(OtherItem);
+    }
+    else
+    {
+        return false;
+    }
+}
+
 bool UItemsContainerBase::IsEmpty()
 {
     return GetContainerItems().Num() <= 0;

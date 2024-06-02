@@ -2,25 +2,16 @@
 
 #include "CoreMinimal.h"
 
-#include "Inventory/Containers/ItemsContainerBase.h"
+#include "Inventory/Containers/GridItemsContainerBase.h"
 
 #include "GridItemsContainer.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGridContainerItemAdded, FVector2f, ItemPos);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGridContainerItemRemoved, FVector2f, ItemPos);
-
-UENUM(BlueprintType)
-enum class EGridContainerDirection : uint8
-{
-	Horizontal, // Column by column
-	Vertical // Row by row
-};
-
 /**
- * Grid containers with free or fixes items positions.
+ * Grid containers with free or fixed items positions.
+ * Each item has same square size. Use UTetrisItemsContainer for items with different rect sizes and custom form.
  */
 UCLASS()
-class INVENTORYSYSTEM_API UGridItemsContainer : public UItemsContainerBase
+class INVENTORYSYSTEM_API UGridItemsContainer : public UGridItemsContainerBase
 {
 	GENERATED_BODY()
 
@@ -35,7 +26,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void RemoveContainerItemFromPosition(FVector2f Position);
 
-	// Find free position starded from Position and ContainerItem to it.
+	// Find free position started from Position.
 	// Return false if here is no free position to place item.
 	UFUNCTION(BlueprintCallable)
 	virtual bool AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position);
@@ -46,17 +37,15 @@ public:
 
 	virtual TArray<UContainerItemBase*> GetContainerItems() override;
 
-	UFUNCTION(BlueprintCallable)
-	bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos);
+	virtual bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos) override;
 
 	// Refiil grid to remove empty spaces
-	UFUNCTION(BlueprintCallable)
-	void Refill();
+	virtual void Refill() override;
 
 	UFUNCTION(BlueprintCallable)
 	bool MoveToFillDirection(FVector2f& CurrentPosition);
 
-	bool Move(float& XPosition, const int32& XMaxPosition, float& YPosition, const int32& YMaxPosition);
+	virtual bool Move(float& XPosition, const int32& XMaxPosition, float& YPosition, const int32& YMaxPosition) override;
 
 	// Return true if item moved to new position
 	UFUNCTION(BlueprintCallable)
@@ -67,36 +56,16 @@ public:
 	bool MoveItemByPosition(FVector2f ItemPosition, FVector2f NewItemPosition);
 
 	// Swap items within same container.
-	UFUNCTION(BlueprintCallable)
-	void SwapItemsPositions(FVector2f A, FVector2f B);
-
-	// Is Position >= 0 and < MaxRows and MaxCollumns
-	UFUNCTION(BlueprintPure)
-	bool IsPositionValid(FVector2f Position);
+	virtual void SwapItemsPositions(FVector2f A, FVector2f B) override;
 
 protected:
 	bool FindFreePosition(UContainerItemBase* ContainerItem, FVector2f& Position);
 
 public:
-	// Setup 0 to infinity 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 MaxRows = 0;
-
-	// Setup 0 to infinity 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 MaxCollumns = 0;
-
-	//Horizontal - Column by column
-	//Vertical - Row by row
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EGridContainerDirection FillDirection = EGridContainerDirection::Vertical;
-
 	UPROPERTY(BlueprintReadOnly)
 	TMap<FVector2f, UContainerItemBase*> ItemsMap;
 
-	UPROPERTY(BlueprintAssignable, Category = "Event Dispatcher")
-	FOnGridContainerItemAdded OnGridContainerItemAdded;
-
-	UPROPERTY(BlueprintAssignable, Category = "Event Dispatcher")
-	FOnGridContainerItemRemoved OnGridContainerItemRemoved;
+private:
+	// For fast access to items positions
+	TMap<UContainerItemBase*, FVector2f> ItemsPositions;
 };
