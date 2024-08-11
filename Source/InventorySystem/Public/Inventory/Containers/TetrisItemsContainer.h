@@ -40,13 +40,13 @@ struct FTetrisContainerSlot
 public:
 	// Top Left position of item
 	UPROPERTY(BlueprintReadWrite)
-	FVector2f Position;
+	FVector2f Position = FVector2f::ZeroVector;
 
 	UPROPERTY(BlueprintReadWrite)
-	UTetrisContainerSlotMetadata* SlotMetadata;
+	UTetrisContainerSlotMetadata* SlotMetadata = nullptr;
 
 	UPROPERTY(BlueprintReadWrite)
-	UContainerItemBase* ContainerItem;
+	UContainerItemBase* ContainerItem = nullptr;
 };
 
 /**
