@@ -16,54 +16,20 @@ class INVENTORYSYSTEM_API UGridItemsContainer : public UGridItemsContainerBase
 	GENERATED_BODY()
 
 public:
-	virtual bool AddContainerItems(TArray<UContainerItemBase*> ContainerItems) override;
-
-	virtual bool AddContainerItem(UContainerItemBase* ContainerItem) override;
-
-	UFUNCTION(BlueprintCallable)
-	virtual bool AddContainerItemToPosition(UContainerItemBase* ContainerItem, FVector2f Position);
-
-	UFUNCTION(BlueprintCallable)
-	virtual void RemoveContainerItemFromPosition(FVector2f Position);
-
-	// Find free position started from Position.
-	// Return false if here is no free position to place item.
-	UFUNCTION(BlueprintCallable)
-	virtual bool AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position);
-
-	virtual bool RemoveContainerItem(UContainerItemBase* ContainerItem) override;
-
 	virtual void InitDefaultItems() override;
-
-	virtual TArray<UContainerItemBase*> GetContainerItems() override;
 
 	virtual bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos) override;
 
 	// Refiil grid to remove empty spaces
 	virtual void Refill() override;
 
-	UFUNCTION(BlueprintCallable)
-	bool MoveToFillDirection(FVector2f& CurrentPosition);
-
-	virtual bool Move(float& XPosition, const int32& XMaxPosition, float& YPosition, const int32& YMaxPosition) override;
-
-	// Return true if item moved to new position
-	UFUNCTION(BlueprintCallable)
-	bool MoveItem(UContainerItemBase* ContainerItem, FVector2f NewItemPosition);
-
-	// Return true if item moved to new position
-	UFUNCTION(BlueprintCallable)
-	bool MoveItemByPosition(FVector2f ItemPosition, FVector2f NewItemPosition);
-
 	// Swap items within same container.
 	virtual void SwapItemsPositions(FVector2f A, FVector2f B) override;
 
 protected:
-	bool FindFreePosition(UContainerItemBase* ContainerItem, FVector2f& Position);
+	virtual void HandleContainerItemRemoved(UContainerItemBase* ContainerItem) override;
 
-public:
-	UPROPERTY(BlueprintReadOnly)
-	TMap<FVector2f, UContainerItemBase*> ItemsMap;
+	virtual void HandleAddContainerItemToPosition(UContainerItemBase* ContainerItem, const FVector2f& Position);
 
 private:
 	// For fast access to items positions

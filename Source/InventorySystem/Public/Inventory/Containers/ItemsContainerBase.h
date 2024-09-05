@@ -91,6 +91,8 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Remove Container Item"))
 	bool ReceiveRemoveContainerItem(UContainerItemBase* ContainerItem);
 
+	virtual void HandleContainerItemRemoved(UContainerItemBase* ContainerItem);
+
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Get Container Items"))
 	TArray<UContainerItemBase*> ReceiveGetContainerItems();
 

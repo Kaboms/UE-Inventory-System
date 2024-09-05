@@ -12,21 +12,6 @@ void UTetrisItemsContainer::InitDefaultItems()
     }
 }
 
-bool UTetrisItemsContainer::AddContainerItems(TArray<UContainerItemBase*> ContainerItems)
-{
-    return false;
-}
-
-bool UTetrisItemsContainer::AddContainerItem(UContainerItemBase* ContainerItem)
-{
-    return false;
-}
-
-bool UTetrisItemsContainer::RemoveContainerItem(UContainerItemBase* ContainerItem)
-{
-    return false;
-}
-
 bool UTetrisItemsContainer::FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos)
 {
     if (FTetrisContainerSlot* TetrisContainer = ItemsSlots.Find(ContainerItem))
@@ -49,6 +34,58 @@ void UTetrisItemsContainer::SortItemsBySlotSize(TArray<UContainerItemBase*>& Ite
         });
 }
 
+bool UTetrisItemsContainer::CanAddToPosition(UContainerItemBase* ContainerItem, FVector2f Position) const
+{
+    if (!Super::CanAddToPosition(ContainerItem, Position))
+        return false;
+
+    UTetrisContainerSlotMetadata* TetrisSlotMetadata = UTetrisContainerSlotMetadata::FindMetadata(ContainerItem->GetItemData());
+
+    TArray<FVector2f> OutOccupiedCells;
+    return CanPlaceTo(TetrisSlotMetadata, FVector2f::ZeroVector, Position, OutOccupiedCells);
+}
+
+void UTetrisItemsContainer::SwapItemsPositions(FVector2f A, FVector2f B)
+{
+    UContainerItemBase* AItem = ItemsMap[A];
+    UContainerItemBase* BItem = ItemsMap[B];
+
+    FTetrisContainerSlot ASlot = ItemsSlots[AItem];
+    FTetrisContainerSlot BSlot = ItemsSlots[BItem];
+
+    Super::SwapItemsPositions(A, B);
+
+    ItemsSlots[AItem] = BSlot;
+    ItemsSlots[BItem] = ASlot;
+}
+
+void UTetrisItemsContainer::HandleContainerItemRemoved(UContainerItemBase* ContainerItem)
+{
+    Super::HandleContainerItemRemoved(ContainerItem);
+
+    ItemsSlots.Remove(ContainerItem);
+}
+
+void UTetrisItemsContainer::EmptyPosition(const FVector2f& Position)
+{
+    FTetrisContainerSlot Slot = ItemsSlots[ItemsMap[Position]];
+    for (int32 x = 0; x < Slot.SlotMetadata->Size.X; x++)
+    {
+        for (int32 y = 0; y < Slot.SlotMetadata->Size.Y; y++)
+        {
+            FVector2f CellToRemove = Slot.Position + FVector2f(x, y);
+            ItemsMap.Remove(CellToRemove);
+        }
+    }
+
+    OnGridContainerItemRemoved.Broadcast(Position);
+}
+
+void UTetrisItemsContainer::HandleAddContainerItemToPosition(UContainerItemBase* ContainerItem, const FVector2f& Position)
+{
+    PlaceToCell(ContainerItem, FVector2f::ZeroVector, Position);
+}
+
 void UTetrisItemsContainer::PlaceToCell(UContainerItemBase* ContainerItem, FVector2f SelectedSlotCell, FVector2f TargetSlotCell)
 {
     if (UTetrisContainerSlotMetadata* SlotMetadata = UTetrisContainerSlotMetadata::FindMetadata(ContainerItem->GetItemData()))
@@ -60,15 +97,31 @@ void UTetrisItemsContainer::PlaceToCell(UContainerItemBase* ContainerItem, FVect
         Slot.SlotMetadata = SlotMetadata;
         Slot.Position = TopLeft;
 
+        ItemsSlots.Add(ContainerItem, Slot);
+
         for (int32 x = 0; x < SlotMetadata->Size.X; x++)
         {
             for (int32 y = 0; y < SlotMetadata->Size.Y; y++)
             {
                 FVector2f CellToAdd = TopLeft + FVector2f(x, y);
-                ItemsMap.Add(CellToAdd, Slot);
+                ItemsMap.Add(CellToAdd, ContainerItem);
             }
         }
     }
+}
+
+bool UTetrisItemsContainer::GetSlotFromPosition(FVector2f Position, FTetrisContainerSlot& OutSlot)
+{
+    if (UContainerItemBase** ContainerItemBasePtr = ItemsMap.Find(Position))
+    {
+        if (FTetrisContainerSlot* Slot = ItemsSlots.Find(*ContainerItemBasePtr))
+        {
+            OutSlot = *Slot;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 bool UTetrisItemsContainer::CanPlaceTo(UTetrisContainerSlotMetadata* SlotMetadata, FVector2f SelectedSlotCell, FVector2f TargetSlotCell, TArray<FVector2f>& OutOccupiedCells) const

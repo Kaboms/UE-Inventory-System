@@ -60,26 +60,31 @@ class INVENTORYSYSTEM_API UTetrisItemsContainer : public UGridItemsContainerBase
 public:
 	virtual void InitDefaultItems() override;
 
-	virtual bool AddContainerItems(TArray<UContainerItemBase*> ContainerItems) override;
-
-	virtual bool AddContainerItem(UContainerItemBase* ContainerItem) override;
-
-	virtual bool RemoveContainerItem(UContainerItemBase* ContainerItem) override;
-
 	virtual  bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos) override;
 
 	UFUNCTION(BlueprintCallable)
 	bool CanPlaceTo(UTetrisContainerSlotMetadata* SlotMetadata, FVector2f SelectedSlotCell, FVector2f TargetSlotCell, UPARAM(Ref) TArray<FVector2f>& OutOccupiedCells) const;
 
+	// Place to cell without any checks.
 	UFUNCTION(BlueprintCallable)
 	void PlaceToCell(UContainerItemBase* ContainerItem, FVector2f SelectedSlotCell, FVector2f TargetSlotCell);
 
 	UFUNCTION(BlueprintCallable)
+	bool GetSlotFromPosition(FVector2f Position, FTetrisContainerSlot& OutSlot);
+
+	UFUNCTION(BlueprintCallable)
 	static void SortItemsBySlotSize(TArray<UContainerItemBase*>& ItemsToSort);
 
-public:
-	UPROPERTY(BlueprintReadOnly)
-	TMap<FVector2f, FTetrisContainerSlot> ItemsMap;
+	virtual bool CanAddToPosition(UContainerItemBase* ContainerItem, FVector2f Position) const override;
+
+	virtual void SwapItemsPositions(FVector2f A, FVector2f B) override;
+
+protected:
+	virtual void HandleAddContainerItemToPosition(UContainerItemBase* ContainerItem, const FVector2f& Position);
+
+	virtual void HandleContainerItemRemoved(UContainerItemBase* ContainerItem) override;
+
+	virtual void EmptyPosition(const FVector2f& Position);
 
 private:
 	// For fast access to item slots

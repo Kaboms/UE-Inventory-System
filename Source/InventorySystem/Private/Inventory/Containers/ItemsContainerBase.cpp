@@ -63,7 +63,7 @@ bool UItemsContainerBase::RemoveContainerItem(UContainerItemBase* ContainerItem)
 {
     if (ReceiveRemoveContainerItem(ContainerItem))
     {
-        OnContainerItemRemoved.Broadcast(ContainerItem);
+        HandleContainerItemRemoved(ContainerItem);
         return true;
     }
     return false;
@@ -146,4 +146,9 @@ bool UItemsContainerBase::MergeItem(UContainerItemBase* ContainerItem, UContaine
 bool UItemsContainerBase::IsEmpty()
 {
     return GetContainerItems().Num() <= 0;
+}
+
+void UItemsContainerBase::HandleContainerItemRemoved(UContainerItemBase* ContainerItem)
+{
+    OnContainerItemRemoved.Broadcast(ContainerItem);
 }

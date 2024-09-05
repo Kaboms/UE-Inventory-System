@@ -26,14 +26,40 @@ class INVENTORYSYSTEM_API UGridItemsContainerBase : public UItemsContainerBase
 	GENERATED_BODY()
 
 public:
+	virtual bool AddContainerItems(TArray<UContainerItemBase*> ContainerItems) override;
+
+	virtual bool AddContainerItem(UContainerItemBase* ContainerItem) override;
+
 	UFUNCTION(BlueprintCallable)
-	virtual  bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos);
+	virtual bool AddContainerItemToPosition(UContainerItemBase* ContainerItem, FVector2f Position);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void RemoveContainerItemFromPosition(FVector2f Position);
+
+	// Find free position started from Position.
+	// Return false if here is no free position to place item.
+	UFUNCTION(BlueprintCallable)
+	virtual bool AddContainerItemFromPosition(UContainerItemBase* ContainerItem, FVector2f& Position);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool MoveToFillDirection(FVector2f& CurrentPosition);
 
 	// Refiil grid to remove empty spaces
 	UFUNCTION(BlueprintCallable)
 	virtual void Refill();
 
-	virtual bool Move(float& XPosition, const int32& XMaxPosition, float& YPosition, const int32& YMaxPosition);
+	virtual bool GetNextCellPosition(float& XPosition, const int32& XMaxPosition, float& YPosition, const int32& YMaxPosition);
+
+	UFUNCTION(BlueprintCallable)
+	virtual  bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos);
+
+	// Return true if item moved to new position
+	UFUNCTION(BlueprintCallable)
+	bool MoveItem(UContainerItemBase* ContainerItem, FVector2f NewItemPosition);
+
+	// Return true if item moved to new position
+	UFUNCTION(BlueprintCallable)
+	bool MoveItemByPosition(FVector2f ItemPosition, FVector2f NewItemPosition);
 
 	// Swap items within same container.
 	UFUNCTION(BlueprintCallable)
@@ -41,9 +67,26 @@ public:
 
 	// Is Position >= 0 and < MaxRows and MaxCollumns
 	UFUNCTION(BlueprintPure)
-	bool IsPositionValid(FVector2f Position);
+	bool IsPositionValid(FVector2f Position) const;
+
+	UFUNCTION(BlueprintPure)
+	virtual bool CanAddToPosition(UContainerItemBase* ContainerItem, FVector2f Position) const;
+
+	virtual TArray<UContainerItemBase*> GetContainerItems() override;
+
+protected:
+	virtual bool FindFreePosition(UContainerItemBase* ContainerItem, FVector2f& Position);
+
+	virtual bool RemoveContainerItem(UContainerItemBase* ContainerItem) override;
+
+	virtual void EmptyPosition(const FVector2f& Position);
+
+	virtual void HandleAddContainerItemToPosition(UContainerItemBase* ContainerItem, const FVector2f& Position);
 
 public:
+	UPROPERTY(BlueprintReadOnly)
+	TMap<FVector2f, UContainerItemBase*> ItemsMap;
+
 	// Setup 0 to infinity 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 MaxRows = 0;
