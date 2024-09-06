@@ -148,7 +148,7 @@ bool UContainerItemBase::CanAddItem()
 
 bool UContainerItemBase::CanMergeWithItem(UContainerItemBase* OtherItem)
 {
-    return IsItemSameType(OtherItem) && CanAddItem();
+    return IsItemSameType(OtherItem) && (!IsValid(Item) || Item->CanMergeWithItem(OtherItem->Item));
 }
 
 bool UContainerItemBase::IsItemSameType(UContainerItemBase* OtherItem)
@@ -163,29 +163,24 @@ void UContainerItemBase::ClampAmount(int32 InAmount)
 
 bool UContainerItemBase::MergeWithOther(UContainerItemBase* OtherContainerItem)
 {
-    if (IsItemSameType(OtherContainerItem))
+    checkf(IsItemSameType(OtherContainerItem), TEXT("Failed merge item with different ID"));
+
+    int32 Reminder = 0;
+    int32 NewAmount = OtherContainerItem->Amount + Amount;
+    if (NewAmount > ItemData->StackSize)
     {
-        int32 Reminder = 0;
-        int32 NewAmount = OtherContainerItem->Amount + Amount;
-        if (NewAmount > ItemData->StackSize)
-        {
-            Reminder = NewAmount - ItemData->StackSize;
-        }
-
-        OtherContainerItem->SetAmount(Reminder);
-        SetAmount(NewAmount - Reminder);
-
-        return Reminder == 0;
+        Reminder = NewAmount - ItemData->StackSize;
     }
 
-    checkf(false, TEXT("Failed merge item with different ID"));
+    OtherContainerItem->SetAmount(Reminder);
+    SetAmount(NewAmount - Reminder);
 
-    return false;
+    return Reminder == 0;
 }
 
 bool UContainerItemBase::MergeOrSwap(UContainerItemBase* OtherContainerItem)
 {
-    if (IsItemSameType(OtherContainerItem))
+    if (CanMergeWithItem(OtherContainerItem))
     {
         return MergeWithOther(OtherContainerItem);
     }

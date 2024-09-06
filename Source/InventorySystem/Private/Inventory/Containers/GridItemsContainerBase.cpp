@@ -66,7 +66,7 @@ bool UGridItemsContainerBase::FindFreePosition(UContainerItemBase* ContainerItem
     while (ItemsMap.Contains(Position))
     {
         UContainerItemBase* ExistedContainerItem = ItemsMap[Position];
-        if (ExistedContainerItem->CanMergeWithItem(ContainerItem))
+        if (ExistedContainerItem->CanAddItem() && ExistedContainerItem->CanMergeWithItem(ContainerItem))
         {
             return true;
         }
@@ -97,6 +97,25 @@ void UGridItemsContainerBase::EmptyPosition(const FVector2f& Position)
 {
     ItemsMap.Remove(Position);
     OnGridContainerItemRemoved.Broadcast(Position);
+}
+
+bool UGridItemsContainerBase::SetContainerItemToPosition(UContainerItemBase* ContainerItem, FVector2f Position)
+{
+    if (!ItemsMap.Contains(Position))
+    {
+        HandleAddContainerItemToPosition(ContainerItem, Position);
+    }
+    else
+    {
+        return MergeItem(ItemsMap[Position], ContainerItem);
+    }
+
+    ContainerItem->Container = this;
+
+    OnGridContainerItemAdded.Broadcast(Position);
+    OnContainerItemAdded.Broadcast(ContainerItem);
+
+    return true;
 }
 
 void UGridItemsContainerBase::HandleAddContainerItemToPosition(UContainerItemBase* ContainerItem, const FVector2f& Position)
@@ -135,20 +154,7 @@ bool UGridItemsContainerBase::AddContainerItemToPosition(UContainerItemBase* Con
     if (!CanAddToPosition(ContainerItem, Position))
         return false;
 
-    if (!ItemsMap.Contains(Position))
-    {
-        HandleAddContainerItemToPosition(ContainerItem, Position);
-    }
-    else
-    {
-        return MergeItem(ItemsMap[Position], ContainerItem);
-    }
-
-    ContainerItem->Container = this;
-
-    OnGridContainerItemAdded.Broadcast(Position);
-    OnContainerItemAdded.Broadcast(ContainerItem);
-    return true;
+    return SetContainerItemToPosition(ContainerItem, Position);
 }
 
 void UGridItemsContainerBase::RemoveContainerItemFromPosition(FVector2f Position)

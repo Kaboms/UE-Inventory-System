@@ -14,3 +14,8 @@ bool UItemBase::DoesItemClassImplementInterface(TSubclassOf<UItemBase> ItemClass
 {
     return ItemClass->ImplementsInterface(Interface);
 }
+
+bool UItemBase::CanMergeWithItem(UItemBase* OtherItem)
+{
+    return true;
+}

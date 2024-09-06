@@ -30,6 +30,7 @@ public:
 
 	virtual bool AddContainerItem(UContainerItemBase* ContainerItem) override;
 
+	// Check if we CanAddToPosition and try add item to position
 	UFUNCTION(BlueprintCallable)
 	virtual bool AddContainerItemToPosition(UContainerItemBase* ContainerItem, FVector2f Position);
 
@@ -80,6 +81,9 @@ protected:
 	virtual bool RemoveContainerItem(UContainerItemBase* ContainerItem) override;
 
 	virtual void EmptyPosition(const FVector2f& Position);
+
+	// Set container item to position without CanAddToPosition check
+	virtual bool SetContainerItemToPosition(UContainerItemBase* ContainerItem, FVector2f Position);
 
 	virtual void HandleAddContainerItemToPosition(UContainerItemBase* ContainerItem, const FVector2f& Position);
 

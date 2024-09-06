@@ -22,6 +22,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	static bool DoesItemClassImplementInterface(TSubclassOf<UItemBase> ItemClass, TSubclassOf<UInterface> Interface);
 
+	UFUNCTION(BlueprintPure)
+	virtual bool CanMergeWithItem(UItemBase* OtherItem);
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "IsDroppable"))
 	bool ReceiveIsDroppable();
