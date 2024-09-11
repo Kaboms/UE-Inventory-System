@@ -129,6 +129,29 @@ bool UGridItemsContainerBase::FindContainerItemPosition(UContainerItemBase* Cont
     return false;
 }
 
+void UGridItemsContainerBase::InitDefaultItems()
+{
+    FVector2f Position(0, 0);
+
+    for (UContainerItemBase* DefaultItem : DefaultContainerItems)
+    {
+        UItemData* ItemData = DefaultItem->GetItemData();
+
+        if (!IsValid(ItemData))
+            continue;
+
+        int32 ItemsAmount = FMath::DivideAndRoundUp(DefaultItem->GetAmount(), ItemData->StackSize);
+        for (int32 i = 0; i < ItemsAmount; i++)
+        {
+            if (!AddContainerItemFromPosition(DefaultItem, Position))
+            {
+                UE_LOG(InventorySystem, Warning, TEXT("Failed to fill grid container with default items. Is there is enough space in the container?"));
+                break;
+            }
+        }
+    }
+}
+
 bool UGridItemsContainerBase::AddContainerItems(TArray<UContainerItemBase*> ContainerItems)
 {
     FVector2f Position(0, 0);

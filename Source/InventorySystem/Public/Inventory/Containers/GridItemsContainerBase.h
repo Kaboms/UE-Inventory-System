@@ -26,6 +26,8 @@ class INVENTORYSYSTEM_API UGridItemsContainerBase : public UItemsContainerBase
 	GENERATED_BODY()
 
 public:
+	virtual void InitDefaultItems() override;
+
 	virtual bool AddContainerItems(TArray<UContainerItemBase*> ContainerItems) override;
 
 	virtual bool AddContainerItem(UContainerItemBase* ContainerItem) override;

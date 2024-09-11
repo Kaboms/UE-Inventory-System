@@ -11,6 +11,15 @@ UContainerItemBase* UContainerItemBase::ConstructContainerItem(UObject* Outer, U
     return ContainerItemBase;
 }
 
+void UContainerItemBase::PostLoad()
+{
+    Super::PostLoad();
+    
+#if WITH_EDITOR
+    UpdateItemStackSize();
+#endif // WITH_EDITOR
+}
+
 bool UContainerItemBase::Swap(UContainerItemBase* OtherContainerItem)
 {
     if (Container->CanSwapItems(this, OtherContainerItem) && OtherContainerItem->Container->CanSwapItems(OtherContainerItem, this))
@@ -210,3 +219,19 @@ UContainerItemBase* UContainerItemBase::Split(int32 SplitAmount)
     return nullptr;
 }
 
+#if WITH_EDITOR
+void UContainerItemBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+    Super::PostEditChangeProperty(PropertyChangedEvent);
+
+    UpdateItemStackSize();
+}
+
+void UContainerItemBase::UpdateItemStackSize()
+{
+    if (IsValid(ItemData))
+    {
+        ItemStackSize = ItemData->StackSize;
+    }
+}
+#endif

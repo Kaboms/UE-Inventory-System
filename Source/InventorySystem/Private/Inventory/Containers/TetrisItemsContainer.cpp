@@ -1,17 +1,5 @@
 #include "Inventory/Containers/TetrisItemsContainer.h"
 
-void UTetrisItemsContainer::InitDefaultItems()
-{
-    TArray<UContainerItemBase*> SortedDefaultItems = DefaultContainerItems;
-
-    SortItemsBySlotSize(SortedDefaultItems);
-
-    if (AddContainerItems(SortedDefaultItems))
-    {
-        checkf(false, TEXT("Failed to fill container with default items. Is there enough space in the container?"))
-    }
-}
-
 bool UTetrisItemsContainer::FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos)
 {
     if (FTetrisContainerSlot* TetrisContainer = ItemsSlots.Find(ContainerItem))

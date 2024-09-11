@@ -2,6 +2,8 @@
 
 #include "InventorySystem.h"
 
+DEFINE_LOG_CATEGORY(InventorySystem);
+
 #define LOCTEXT_NAMESPACE "FInventorySystemModule"
 
 void FInventorySystemModule::StartupModule()

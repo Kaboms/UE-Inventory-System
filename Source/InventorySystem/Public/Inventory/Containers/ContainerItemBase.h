@@ -21,6 +21,8 @@ public:
 	UFUNCTION(BlueprintCallable, Meta = (DefaultToSelf = "Outer", DeterminesOutputType = "ContainerItemClass"))
 	static UContainerItemBase* ConstructContainerItem(UObject* Outer, UItemData* ItemData, TSubclassOf<UContainerItemBase> ContainerItemClass);
 
+	virtual void PostLoad() override;
+
 	// Swap Item and ItemData with other ContainerItem
 	UFUNCTION(BlueprintCallable)
 	bool Swap(UContainerItemBase* OtherContainerItem);
@@ -112,7 +114,10 @@ public:
 	FContainerItemAmountChanges OnAmountChanges;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintGetter = GetAmount, BlueprintSetter = SetAmount)
+	// Amount of items. Keep in mind that for any amount of items here is always only one the Item intance for this ContainerItem.
+	// You can setup Amount greater that ItemData StackSize. 
+	// When a container is filled with the default items it's should divide this amount to several ContainerItems
+	UPROPERTY(EditAnywhere, BlueprintGetter = GetAmount, BlueprintSetter = SetAmount, Category = Amount)
 	int32 Amount = 1;
 
 	// If null - item instance will generate from item data
@@ -121,4 +126,18 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintGetter = GetItemData, meta = (ExposeOnSpawn = "true"))
 	TObjectPtr<UItemData> ItemData;
+
+#if WITH_EDITOR
+public:
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	void UpdateItemStackSize();
+
+#if WITH_EDITORONLY_DATA
+public:
+	UPROPERTY(VisibleAnywhere, Category = Amount)
+	int32 ItemStackSize;
+#endif
+
+#endif
 };

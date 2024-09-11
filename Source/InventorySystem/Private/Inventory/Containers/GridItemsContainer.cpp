@@ -3,22 +3,6 @@
 #include "Inventory/ItemBase.h"
 #include "Inventory/ItemData.h"
 
-void UGridItemsContainer::InitDefaultItems()
-{
-    FVector2f Position(0, 0);
-
-    for (UContainerItemBase* DefaultItem : DefaultContainerItems)
-    {
-        // TODO Default item amount can be greater than item max stack size.
-        DefaultItem->ClampAmount(DefaultItem->GetAmount());
-
-        if (!AddContainerItemFromPosition(DefaultItem, Position))
-        {
-            checkf(false, TEXT("Failed to fill container with default items. Is there enough space in the container?"))
-        }
-    }
-}
-
 void UGridItemsContainer::Refill()
 {
     ItemsPositions.Empty();

@@ -20,12 +20,16 @@ public:
 		{
 			return Cast<UTetrisContainerSlotMetadata>(ItemMetadata);
 		}
-		return nullptr;
+		else
+		{
+			UE_LOG(InventorySystem, Warning, TEXT("Failed to find TetrisMetadata from ItemData: %s"), *ItemData->GetPathName())
+			return NewObject<UTetrisContainerSlotMetadata>(ItemData);
+		}
 	}
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FVector2f Size;
+	FVector2f Size = FVector2f(1, 1);
 	
 	// Use this for exact slot form. By default slot is Rectangle setted by Size property
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -58,8 +62,6 @@ class INVENTORYSYSTEM_API UTetrisItemsContainer : public UGridItemsContainerBase
 	GENERATED_BODY()
 
 public:
-	virtual void InitDefaultItems() override;
-
 	virtual  bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos) override;
 
 	UFUNCTION(BlueprintCallable)

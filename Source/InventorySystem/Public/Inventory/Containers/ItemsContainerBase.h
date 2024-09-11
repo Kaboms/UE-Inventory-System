@@ -1,5 +1,7 @@
 #pragma once
 
+#include "InventorySystem.h"
+
 #include "GameplayTagContainer.h"
 #include "CoreMinimal.h"
 #include "WorldObject.h"

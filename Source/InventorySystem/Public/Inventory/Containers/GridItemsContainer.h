@@ -16,8 +16,6 @@ class INVENTORYSYSTEM_API UGridItemsContainer : public UGridItemsContainerBase
 	GENERATED_BODY()
 
 public:
-	virtual void InitDefaultItems() override;
-
 	virtual bool FindContainerItemPosition(UContainerItemBase* ContainerItem, FVector2f& OutPos) override;
 
 	// Refiil grid to remove empty spaces
