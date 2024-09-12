@@ -22,6 +22,7 @@ public class InventorySystem : ModuleRules
             {
                 "CoreUObject",
                 "Engine",
+                "UMG",
                 "Slate",
                 "SlateCore",
             }
