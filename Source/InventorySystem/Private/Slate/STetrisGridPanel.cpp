@@ -8,6 +8,9 @@
 
 SLATE_IMPLEMENT_WIDGET(STetrisGridPanel)
 
+// TODO
+PRAGMA_DISABLE_OPTIMIZATION
+
 void STetrisGridPanel::PrivateRegisterAttributes(FSlateAttributeInitializer& AttributeInitializer)
 {
 	FSlateWidgetSlotAttributeInitializer Initializer = SLATE_ADD_PANELCHILDREN_DEFINITION(AttributeInitializer, Slots);
@@ -29,10 +32,15 @@ void STetrisGridPanel::FSlot::Construct(const FChildren& SlotOwner, FSlotArgumen
 	{
 		LayerParam = InArgs._Layer.GetValue();
 	}
+	if (InArgs._SlotSize.IsSet())
+	{
+		SlotSizeParam = InArgs._SlotSize.GetValue();
+	}
 }
 
 STetrisGridPanel::STetrisGridPanel()
 	: Slots(this, GET_MEMBER_NAME_CHECKED(STetrisGridPanel, Slots))
+	, CellSize(32)
 {
 	SetCanTick(false);
 }
@@ -165,35 +173,12 @@ int32 STetrisGridPanel::OnPaint(const FPaintArgs& Args, const FGeometry& Allotte
 	return MaxLayerId;
 }
 
-void CalculateStretchedCellSizes(TArray<float>& OutSizes, float AllotedSize, const TArray<float>& InDesiredSizes, const TArray<TAttribute<float>>& Coefficients)
+void CalculateStretchedCellSizes(TArray<float>& OutSizes, float AllotedSize, const TArray<float>& InDesiredSizes, const float& CellSize)
 {
-	const int32 NumCoefficients = Coefficients.Num();
-	float CoefficientTotal = 0.f;
-
 	for (int32 Index = 0; Index < InDesiredSizes.Num(); ++Index)
 	{
-		const float Coefficient = Index < NumCoefficients ? Coefficients[Index].Get(0) : 0;
-
-		// Compute the total space available for stretchy columns.
-		if (Coefficient == 0)
-		{
-			AllotedSize -= InDesiredSizes[Index];
-		}
-		else
-		{
-			// Compute the denominator for dividing up the stretchy column space
-			CoefficientTotal += Coefficient;
-		}
-	}
-
-	for (int32 Index = 0; Index < InDesiredSizes.Num(); ++Index)
-	{
-		const float Coefficient = Index < NumCoefficients ? Coefficients[Index].Get(0) : 0;
-
 		// Figure out how big each column needs to be
-		OutSizes[Index] = Coefficient != 0
-			? (Coefficient / CoefficientTotal * AllotedSize)
-			: InDesiredSizes[Index];
+		OutSizes[Index] = CellSize;
 	}
 }
 
@@ -221,43 +206,43 @@ void STetrisGridPanel::OnArrangeChildren(const FGeometry& AllottedGeometry, FArr
 		FinalRows[FinalRows.Num() - 1] = 0.0f;
 	}
 
-	//CalculateStretchedCellSizes(FinalColumns, AllottedGeometry.GetLocalSize().X, Columns, ColFillCoefficients);
-	//CalculateStretchedCellSizes(FinalRows, AllottedGeometry.GetLocalSize().Y, Rows, RowFillCoefficients);
+	CalculateStretchedCellSizes(FinalColumns, AllottedGeometry.GetLocalSize().X, Columns, CellSize);
+	CalculateStretchedCellSizes(FinalRows, AllottedGeometry.GetLocalSize().Y, Rows, CellSize);
 
 	// Build up partial sums for row and column sizes so that we can handle column and row spans conveniently.
 	ComputePartialSums(FinalColumns);
 	ComputePartialSums(FinalRows);
 
 	// ARRANGE PHASE
-	//for (int32 SlotIndex = 0; SlotIndex < Slots.Num(); ++SlotIndex)
-	//{
-	//	const FSlot& CurSlot = Slots[SlotIndex];
-	//	const EVisibility ChildVisibility = CurSlot.GetWidget()->GetVisibility();
-	//	if (ArrangedChildren.Accepts(ChildVisibility))
-	//	{
-	//		// Figure out the position of this cell.
-	//		const FVector2D ThisCellOffset(FinalColumns[CurSlot.GetColumn()], FinalRows[CurSlot.GetRow()]);
+	for (int32 SlotIndex = 0; SlotIndex < Slots.Num(); ++SlotIndex)
+	{
+		const FSlot& CurSlot = Slots[SlotIndex];
+		const EVisibility ChildVisibility = CurSlot.GetWidget()->GetVisibility();
+		if (ArrangedChildren.Accepts(ChildVisibility))
+		{
+			// Figure out the position of this cell.
+			const FVector2D ThisCellOffset(FinalColumns[CurSlot.GetColumn()], FinalRows[CurSlot.GetRow()]);
 
-	//		// Figure out the size of this slot; takes row span into account.
-	//		// We use the properties of partial sums arrays to achieve this.
-	//		const FVector2D CellSize(
-	//			FinalColumns[CurSlot.GetColumn() + CurSlot.GetColumnSpan()] - ThisCellOffset.X,
-	//			FinalRows[CurSlot.GetRow() + CurSlot.GetRowSpan()] - ThisCellOffset.Y);
+			// Figure out the size of this slot; takes row span into account.
+			// We use the properties of partial sums arrays to achieve this.
+			const FVector2D SlotSize(
+				FinalColumns[CurSlot.GetColumn()] - ThisCellOffset.X,
+				FinalRows[CurSlot.GetRow()] - ThisCellOffset.Y);
 
-	//		// Do the standard arrangement of elements within a slot
-	//		// Takes care of alignment and padding.
-	//		const FMargin SlotPadding(CurSlot.GetPadding());
-	//		AlignmentArrangeResult XAxisResult = AlignChild<Orient_Horizontal>(CellSize.X, CurSlot, SlotPadding);
-	//		AlignmentArrangeResult YAxisResult = AlignChild<Orient_Vertical>(CellSize.Y, CurSlot, SlotPadding);
+			// Do the standard arrangement of elements within a slot
+			// Takes care of alignment and padding.
+			const FMargin SlotPadding(CurSlot.GetPadding());
+			AlignmentArrangeResult XAxisResult = AlignChild<Orient_Horizontal>(SlotSize.X, CurSlot, SlotPadding);
+			AlignmentArrangeResult YAxisResult = AlignChild<Orient_Vertical>(SlotSize.Y, CurSlot, SlotPadding);
 
-	//		// Output the result
-	//		ArrangedChildren.AddWidget(ChildVisibility, AllottedGeometry.MakeChild(
-	//			CurSlot.GetWidget(),
-	//			ThisCellOffset + FVector2D(XAxisResult.Offset, YAxisResult.Offset) + CurSlot.GetNudge(),
-	//			FVector2D(XAxisResult.Size, YAxisResult.Size)
-	//		));
-	//	}
-	//}
+			// Output the result
+			ArrangedChildren.AddWidget(ChildVisibility, AllottedGeometry.MakeChild(
+				CurSlot.GetWidget(),
+				ThisCellOffset + FVector2D(XAxisResult.Offset, YAxisResult.Offset),
+				FVector2D(XAxisResult.Size, YAxisResult.Size)
+			));
+		}
+	}
 }
 
 
@@ -311,7 +296,7 @@ FVector2D STetrisGridPanel::GetDesiredRegionSize(const FIntPoint& StartCell, int
 	}
 }
 
-void STetrisGridPanel::SetCellSize(int32 InCellSize)
+void STetrisGridPanel::SetCellSize(float InCellSize)
 {
 	CellSize = InCellSize;
 
@@ -367,25 +352,25 @@ void STetrisGridPanel::NotifySlotChanged(const FSlot* InSlot, bool bSlotLayerCha
 	// by doing Columns[End] - Columns[Start] or Rows[End] - Rows[Start].
 	// The first Columns[]/Rows[] entry will be 0.
 
-	//const int32 NumColumnsRequiredForThisSlot = InSlot->GetColumn() + InSlot->GetColumnSpan() + 1;
-	//if (NumColumnsRequiredForThisSlot > Columns.Num())
-	//{
-	//	Columns.AddZeroed(NumColumnsRequiredForThisSlot - Columns.Num());
-	//}
+	const int32 NumColumnsRequiredForThisSlot = InSlot->GetColumn() + InSlot->GetSlotSize().X + 1;
+	if (NumColumnsRequiredForThisSlot > Columns.Num())
+	{
+		Columns.AddZeroed(NumColumnsRequiredForThisSlot - Columns.Num());
+	}
 
-	//const int32 NumRowsRequiredForThisSlot = InSlot->GetRow() + InSlot->GetRowSpan() + 1;
-	//if (NumRowsRequiredForThisSlot > Rows.Num())
-	//{
-	//	Rows.AddZeroed(NumRowsRequiredForThisSlot - Rows.Num());
-	//}
+	const int32 NumRowsRequiredForThisSlot = InSlot->GetRow() + InSlot->GetSlotSize().Y + 1;
+	if (NumRowsRequiredForThisSlot > Rows.Num())
+	{
+		Rows.AddZeroed(NumRowsRequiredForThisSlot - Rows.Num());
+	}
 
-	//if (bSlotLayerChanged)
-	//{
-	//	Slots.Sort([](const FSlot& LHS, const FSlot& RHS)
-	//		{
-	//			return LHS.GetLayer() < RHS.GetLayer();
-	//		});
-	//}
+	if (bSlotLayerChanged)
+	{
+		Slots.Sort([](const FSlot& LHS, const FSlot& RHS)
+			{
+				return LHS.GetLayer() < RHS.GetLayer();
+			});
+	}
 
 	Invalidate(EInvalidateWidgetReason::Layout);
 }
@@ -400,16 +385,16 @@ void STetrisGridPanel::ComputeDesiredCellSizes(TArray<float>& OutColumns, TArray
 		const FSlot& CurSlot = Slots[SlotIndex];
 		if (CurSlot.GetWidget()->GetVisibility() != EVisibility::Collapsed)
 		{
-			//// The slots wants to be as big as its content along with the required padding.
-			//const FVector2D SlotDesiredSize = CurSlot.GetWidget()->GetDesiredSize() + CurSlot.GetPadding().GetDesiredSize();
+			// The slots wants to be as big as its content along with the required padding.
+			const FVector2D SlotDesiredSize = CurSlot.GetWidget()->GetDesiredSize() + CurSlot.GetPadding().GetDesiredSize();
 
-			//// If the slot has a (colspan, rowspan) of (1,1) it will only affect that slot.
-			//// For larger spans, the slot's size will be evenly distributed across all the affected slots.
-			//const FVector2D SizeContribution(SlotDesiredSize.X / CurSlot.GetColumnSpan(), SlotDesiredSize.Y / CurSlot.GetRowSpan());
+			// If the slot has a (colspan, rowspan) of (1,1) it will only affect that slot.
+			// For larger spans, the slot's size will be evenly distributed across all the affected slots.
+			const FVector2D SizeContribution(SlotDesiredSize.X / CurSlot.GetSlotSize().X, SlotDesiredSize.Y / CurSlot.GetSlotSize().Y);
 
-			//// Distribute the size contributions over all the columns and rows that this slot spans
-			//DistributeSizeContributions(SizeContribution.X, OutColumns, CurSlot.GetColumn(), CurSlot.GetColumn() + CurSlot.GetColumnSpan());
-			//DistributeSizeContributions(SizeContribution.Y, OutRows, CurSlot.GetRow(), CurSlot.GetRow() + CurSlot.GetRowSpan());
+			// Distribute the size contributions over all the columns and rows that this slot spans
+			DistributeSizeContributions(SizeContribution.X, OutColumns, CurSlot.GetColumn(), CurSlot.GetColumn() + CurSlot.GetSlotSize().X);
+			DistributeSizeContributions(SizeContribution.Y, OutRows, CurSlot.GetRow(), CurSlot.GetRow() + CurSlot.GetSlotSize().Y);
 		}
 	}
 }
@@ -438,3 +423,4 @@ int32 STetrisGridPanel::LayoutDebugPaint(const FGeometry& AllottedGeometry, cons
 	return LayerId;
 }
 
+PRAGMA_ENABLE_OPTIMIZATION

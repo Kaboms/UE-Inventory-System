@@ -83,12 +83,12 @@ UTetrisGridSlot* UTetrisGridPanel::AddChildToGrid(UWidget* Content, int32 InRow,
 	return GridSlot;
 }
 
-int32 UTetrisGridPanel::GetCellSize() const
+float UTetrisGridPanel::GetCellSize() const
 {
 	return CellSize;
 }
 
-void UTetrisGridPanel::SetCellSize(int32 InCellSize)
+void UTetrisGridPanel::SetCellSize(float InCellSize)
 {
 	CellSize = InCellSize;
 

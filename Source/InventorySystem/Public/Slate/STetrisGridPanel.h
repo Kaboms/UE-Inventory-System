@@ -195,7 +195,7 @@ public:
 	 */
 	FVector2D GetDesiredRegionSize(const FIntPoint& StartCell, int32 Width, int32 Height) const;
 
-	void SetCellSize(int32 CellSize);
+	void SetCellSize(float CellSize);
 
 public:
 
@@ -262,5 +262,5 @@ private:
 	/** Total desires size along each axis. */
 	FVector2D TotalDesiredSizes;
 
-	int32 CellSize;
+	float CellSize;
 };
