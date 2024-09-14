@@ -28,11 +28,11 @@ public:
 	UTetrisGridSlot* AddChildToGrid(UWidget* Content, int32 InRow = 0, int32 InColumn = 0);
 
 	/** Gets the row index of the slot */
-	float GetCellSize() const;
+	FVector2D GetGridSize() const;
 
 	/** Sets the row index of the slot, this determines what cell the slot is in the panel */
 	UFUNCTION(BlueprintCallable)
-	void SetCellSize(float InCellSize);
+	void SetGridSize(FVector2D InGridSize);
 
 public:
 	// UWidget interface
@@ -54,8 +54,8 @@ protected:
 
 protected:
 	/** The padding area between the slot and the content it contains. */
-	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetCellSize")
-	float CellSize;
+	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetGridSize")
+	FVector2D GridSize;
 
 protected:
 	TSharedPtr<STetrisGridPanel> MyTetrisGridPanel;

@@ -167,14 +167,14 @@ public:
 	bool RemoveSlot(const TSharedRef<SWidget>& SlotWidget);
 
 	SLATE_BEGIN_ARGS(STetrisGridPanel)
-		: _CellSize(32)
+		: _GridSize(FVector2D(6, 6))
 		{
 			_Visibility = EVisibility::SelfHitTestInvisible;
 		}
 
 		SLATE_SLOT_ARGUMENT(FSlot, Slots)
 
-		SLATE_ARGUMENT(float, CellSize)
+		SLATE_ARGUMENT(FVector2D, GridSize)
 
 	SLATE_END_ARGS()
 
@@ -195,7 +195,7 @@ public:
 	 */
 	FVector2D GetDesiredRegionSize(const FIntPoint& StartCell, int32 Width, int32 Height) const;
 
-	void SetCellSize(float CellSize);
+	void SetGridSize(FVector2D GridSize);
 
 public:
 
@@ -262,5 +262,5 @@ private:
 	/** Total desires size along each axis. */
 	FVector2D TotalDesiredSizes;
 
-	float CellSize;
+	FVector2D GridSize;
 };

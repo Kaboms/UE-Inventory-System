@@ -40,7 +40,6 @@ void STetrisGridPanel::FSlot::Construct(const FChildren& SlotOwner, FSlotArgumen
 
 STetrisGridPanel::STetrisGridPanel()
 	: Slots(this, GET_MEMBER_NAME_CHECKED(STetrisGridPanel, Slots))
-	, CellSize(32)
 {
 	SetCanTick(false);
 }
@@ -206,8 +205,16 @@ void STetrisGridPanel::OnArrangeChildren(const FGeometry& AllottedGeometry, FArr
 		FinalRows[FinalRows.Num() - 1] = 0.0f;
 	}
 
-	CalculateStretchedCellSizes(FinalColumns, AllottedGeometry.GetLocalSize().X, Columns, CellSize);
-	CalculateStretchedCellSizes(FinalRows, AllottedGeometry.GetLocalSize().Y, Rows, CellSize);
+	FVector2D LocalSize = AllottedGeometry.GetLocalSize();
+	if (Columns.Num() > GridSize.X || Rows.Num() > GridSize.Y)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tetris grid has actual size greater than its max size. Max grid size: %s; Actual Size: %d.%d"), *GridSize.ToString(), Columns.Num(), Rows.Num())
+	}
+
+	float CellSize = FVector2D(LocalSize.X / GridSize.X, LocalSize.Y / GridSize.Y).GetMin();
+
+	CalculateStretchedCellSizes(FinalColumns, LocalSize.X, Columns, CellSize);
+	CalculateStretchedCellSizes(FinalRows, LocalSize.Y, Rows, CellSize);
 
 	// Build up partial sums for row and column sizes so that we can handle column and row spans conveniently.
 	ComputePartialSums(FinalColumns);
@@ -225,9 +232,7 @@ void STetrisGridPanel::OnArrangeChildren(const FGeometry& AllottedGeometry, FArr
 
 			// Figure out the size of this slot; takes row span into account.
 			// We use the properties of partial sums arrays to achieve this.
-			const FVector2D SlotSize(
-				FinalColumns[CurSlot.GetColumn()] - ThisCellOffset.X,
-				FinalRows[CurSlot.GetRow()] - ThisCellOffset.Y);
+			const FVector2D SlotSize(CurSlot.GetSlotSize().X * CellSize, CurSlot.GetSlotSize().Y * CellSize);
 
 			// Do the standard arrangement of elements within a slot
 			// Takes care of alignment and padding.
@@ -296,9 +301,9 @@ FVector2D STetrisGridPanel::GetDesiredRegionSize(const FIntPoint& StartCell, int
 	}
 }
 
-void STetrisGridPanel::SetCellSize(float InCellSize)
+void STetrisGridPanel::SetGridSize(FVector2D InGridSize)
 {
-	CellSize = InCellSize;
+	GridSize = InGridSize;
 
 	Invalidate(EInvalidateWidgetReason::Layout);
 }

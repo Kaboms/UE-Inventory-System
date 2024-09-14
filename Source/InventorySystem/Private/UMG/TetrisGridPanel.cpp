@@ -83,24 +83,29 @@ UTetrisGridSlot* UTetrisGridPanel::AddChildToGrid(UWidget* Content, int32 InRow,
 	return GridSlot;
 }
 
-float UTetrisGridPanel::GetCellSize() const
+FVector2D UTetrisGridPanel::GetGridSize() const
 {
-	return CellSize;
+	return GridSize;
 }
 
-void UTetrisGridPanel::SetCellSize(float InCellSize)
+void UTetrisGridPanel::SetGridSize(FVector2D InGridSize)
 {
-	CellSize = InCellSize;
+	GridSize = InGridSize;
 
 	if (MyTetrisGridPanel)
 	{
-		MyTetrisGridPanel->SetCellSize(CellSize);
+		MyTetrisGridPanel->SetGridSize(GridSize);
 	}
 }
 
 void UTetrisGridPanel::SynchronizeProperties()
 {
 	Super::SynchronizeProperties();
+
+	if (MyTetrisGridPanel)
+	{
+		MyTetrisGridPanel->SetGridSize(GridSize);
+	}
 }
 
 #if WITH_EDITOR
