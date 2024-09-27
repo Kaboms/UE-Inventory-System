@@ -25,12 +25,27 @@ public:
 	UFUNCTION(BlueprintPure)
 	virtual bool CanMergeWithItem(UItemBase* OtherItem);
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure)
+	FText GetDisplayName();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure)
+	FText GetDescription();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure)
+	UTexture2D* GetIcon();
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "IsDroppable"))
 	bool ReceiveIsDroppable();
 
 	UFUNCTION(BlueprintImplementableEvent, Meta = (DisplayName = "Init"))
 	void ReceiveInit();
+
+	virtual FText GetDisplayName_Implementation();
+
+	virtual FText GetDescription_Implementation();
+
+	virtual UTexture2D* GetIcon_Implementation();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (ExposeOnSpawn))

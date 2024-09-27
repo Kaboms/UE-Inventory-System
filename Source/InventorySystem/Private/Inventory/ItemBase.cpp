@@ -19,3 +19,30 @@ bool UItemBase::CanMergeWithItem(UItemBase* OtherItem)
 {
     return true;
 }
+
+FText UItemBase::GetDisplayName_Implementation()
+{
+    if (IsValid(ItemData))
+    {
+        return ItemData->DisplayName;
+    }
+    return FText();
+}
+
+FText UItemBase::GetDescription_Implementation()
+{
+    if (IsValid(ItemData))
+    {
+        return ItemData->Description;
+    }
+    return FText();
+}
+
+UTexture2D* UItemBase::GetIcon_Implementation()
+{
+    if (IsValid(ItemData))
+    {
+        return ItemData->Icon;
+    }
+    return nullptr;
+}
