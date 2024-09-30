@@ -3,6 +3,7 @@
 #include "InventorySystemEditor.h"
 #include "AssetTypeActions/AssetTypeActions_ItemData.h"
 #include "InventorySystemEditorStyle.h"
+#include "Customizations/TetrisGridPanelDetails.h"
 
 #define LOCTEXT_NAMESPACE "FInventorySystemEditorModule"
 
@@ -17,6 +18,10 @@ void FInventorySystemEditorModule::StartupModule()
 #endif
 
 	FInventorySystemEditorStyle::Register();
+
+	// Class detail customizations
+	FPropertyEditorModule& PropertyModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>(TEXT("PropertyEditor"));
+	PropertyModule.RegisterCustomClassLayout(TEXT("TetrisGridPanel"), FOnGetDetailCustomizationInstance::CreateStatic(&FTetrisGridPanelDetails::MakeInstance));
 }
 
 void FInventorySystemEditorModule::ShutdownModule()

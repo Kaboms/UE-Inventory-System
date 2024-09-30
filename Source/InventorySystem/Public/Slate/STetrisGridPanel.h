@@ -15,6 +15,7 @@ class FArrangedChildren;
 class FPaintArgs;
 class FSlateWindowElementList;
 
+// Tetris-like grid panel. Most logic "borrowed" from SGridPanel
 class INVENTORYSYSTEM_API STetrisGridPanel : public SPanel
 {
 	SLATE_DECLARE_WIDGET(STetrisGridPanel, SPanel)

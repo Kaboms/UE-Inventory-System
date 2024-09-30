@@ -13,11 +13,11 @@ class STetrisGridPanel;
 class UTetrisGridSlot;
 
 /**
- * A table-like panel that retains the width of every column throughout the table.
+ * Tetris-like panel with a fixed grid slot size
  *
  * * Many Children
  */
-UCLASS()
+UCLASS(meta = (SlotInterface = TetrisSlot))
 class INVENTORYSYSTEM_API UTetrisGridPanel : public UPanelWidget
 {
 	GENERATED_UCLASS_BODY()
@@ -34,7 +34,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetGridSize(FVector2D InGridSize);
 
-public:
+	UFUNCTION(BlueprintGetter)
+	TSubclassOf<UUserWidget> GetSlotWidgetClass() const { return SlotWidgetClass; }
+
 	// UWidget interface
 	virtual void SynchronizeProperties() override;
 	// End of UWidget interface
@@ -52,6 +54,13 @@ protected:
 	virtual void OnSlotRemoved(UPanelSlot* Slot) override;
 	// End UPanelWidget
 
+	// UWidget interface
+	virtual TSharedRef<SWidget> RebuildWidget() override;
+	// End of UWidget interface
+
+	UPROPERTY(EditAnywhere, BlueprintGetter = GetSlotWidgetClass, Category = Slots, meta = (DesignerRebuild, AllowPrivateAccess = true, MustImplement = "/Script/InventorySystem.TetrisSlot"))
+	TSubclassOf<UUserWidget> SlotWidgetClass;
+
 protected:
 	/** The padding area between the slot and the content it contains. */
 	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetGridSize")
@@ -60,8 +69,6 @@ protected:
 protected:
 	TSharedPtr<STetrisGridPanel> MyTetrisGridPanel;
 
-protected:
-	// UWidget interface
-	virtual TSharedRef<SWidget> RebuildWidget() override;
-	// End of UWidget interface
+private:
+	friend class FTetrisGridPanelDetails;
 };

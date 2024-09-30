@@ -12,8 +12,7 @@
 #include "TetrisGridSlot.generated.h"
 
 /**
- * A slot for UGridPanel, these slots all share the same size as the largest slot
- * in the grid.
+ * A slot for UTetrisGridPanel.
  */
 UCLASS()
 class INVENTORYSYSTEM_API UTetrisGridSlot : public UPanelSlot

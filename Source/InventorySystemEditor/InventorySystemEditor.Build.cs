@@ -23,7 +23,10 @@ public class InventorySystemEditor : ModuleRules
                 "SlateCore",
                 "InventorySystem",
                 "UnrealEd",
-                "Projects"
+                "Projects",
+                "PropertyEditor",
+                "UMG",
+
             }
             );
 
