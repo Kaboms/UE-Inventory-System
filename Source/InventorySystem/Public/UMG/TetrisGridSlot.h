@@ -104,7 +104,7 @@ protected:
 	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetLayer", Category = "Layout|Tetris Grid Slot")
 	int32 Layer;
 
-	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetSlotSize", Category = "Layout|Tetris Grid Slot")
+	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetSlotSize", Category = "Layout|Tetris Grid Slot", meta = (UIMin = "1", UIMax = "64", Delta = "1"))
 	FVector2D SlotSize;
 
 private:

@@ -6,10 +6,10 @@
 #include "UObject/ObjectMacros.h"
 #include "Widgets/SWidget.h"
 #include "Components/PanelWidget.h"
+#include "Slate/STetrisGridPanel.h"
 #include "TetrisGridPanel.generated.h"
 
 class IWidgetCompilerLog;
-class STetrisGridPanel;
 class UTetrisGridSlot;
 
 /**
@@ -45,6 +45,7 @@ public:
 
 #if WITH_EDITOR
 	virtual const FText GetPaletteCategory() override;
+	virtual void ValidateCompiledDefaults(IWidgetCompilerLog& CompileLog) const override;
 #endif
 
 protected:
@@ -58,15 +59,16 @@ protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	// End of UWidget interface
 
+private:
+	TSharedRef<SBorder> HandleGenerateTetrisSlot();
+
+protected:
+	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetGridSize", meta = (UIMin = "1", UIMax = "64", Delta = "1"))
+	FVector2D GridSize;
+
 	UPROPERTY(EditAnywhere, BlueprintGetter = GetSlotWidgetClass, Category = Slots, meta = (DesignerRebuild, AllowPrivateAccess = true, MustImplement = "/Script/InventorySystem.TetrisSlot"))
 	TSubclassOf<UUserWidget> SlotWidgetClass;
 
-protected:
-	/** The padding area between the slot and the content it contains. */
-	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetGridSize")
-	FVector2D GridSize;
-
-protected:
 	TSharedPtr<STetrisGridPanel> MyTetrisGridPanel;
 
 private:

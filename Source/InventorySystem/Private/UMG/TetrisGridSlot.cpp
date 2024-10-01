@@ -96,6 +96,8 @@ void UTetrisGridSlot::SetLayer(int32 InLayer)
 
 void UTetrisGridSlot::SetSlotSize(FVector2D InSlotSize)
 {
+	checkf(SlotSize.X > 0 && SlotSize.Y > 0, TEXT("Invalid grid size X: %d; Y: %d"), SlotSize.X, SlotSize.Y)
+
 	SlotSize = InSlotSize;
 	if (Slot)
 	{

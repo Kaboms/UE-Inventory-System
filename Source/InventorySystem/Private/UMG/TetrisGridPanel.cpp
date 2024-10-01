@@ -2,8 +2,9 @@
 
 #include "UMG/TetrisGridPanel.h"
 #include "UMG/TetrisGridSlot.h"
+#include "Slate/ITetrisSlot.h"
+
 #include "Widgets/DeclarativeSyntaxSupport.h"
-#include "Slate/STetrisGridPanel.h"
 #include "Editor/WidgetCompilerLog.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(TetrisGridPanel)
@@ -56,7 +57,9 @@ void UTetrisGridPanel::OnSlotRemoved(UPanelSlot* InSlot)
 
 TSharedRef<SWidget> UTetrisGridPanel::RebuildWidget()
 {
-	MyTetrisGridPanel = SNew(STetrisGridPanel);
+	MyTetrisGridPanel = SNew(STetrisGridPanel)
+		.GridSize(GridSize)
+		.OnGenerateTetrisSlot_UObject(this, &UTetrisGridPanel::HandleGenerateTetrisSlot);
 
 	for (UPanelSlot* PanelSlot : Slots)
 	{
@@ -68,6 +71,11 @@ TSharedRef<SWidget> UTetrisGridPanel::RebuildWidget()
 	}
 
 	return MyTetrisGridPanel.ToSharedRef();
+}
+
+TSharedRef<SBorder> UTetrisGridPanel::HandleGenerateTetrisSlot()
+{
+	return SNew(SBorder);
 }
 
 UTetrisGridSlot* UTetrisGridPanel::AddChildToGrid(UWidget* Content, int32 InRow, int32 InColumn)
@@ -90,6 +98,8 @@ FVector2D UTetrisGridPanel::GetGridSize() const
 
 void UTetrisGridPanel::SetGridSize(FVector2D InGridSize)
 {
+	checkf(InGridSize.X > 0 && InGridSize.Y > 0, TEXT("Invalid grid size X: %d; Y: %d"), InGridSize.X, InGridSize.Y)
+
 	GridSize = InGridSize;
 
 	if (MyTetrisGridPanel)
@@ -113,6 +123,18 @@ void UTetrisGridPanel::SynchronizeProperties()
 const FText UTetrisGridPanel::GetPaletteCategory()
 {
 	return LOCTEXT("Panel", "Panel");
+}
+
+void UTetrisGridPanel::ValidateCompiledDefaults(IWidgetCompilerLog& CompileLog) const
+{
+	if (!SlotWidgetClass)
+	{
+		CompileLog.Error(FText::Format(LOCTEXT("Error_TetrisGridPanel_MissingSlotClass", "{0} has no SlotWidgetClass specified - required for any UTetrisGridPanel to function."), FText::FromString(GetName())));
+	}
+	else if (!SlotWidgetClass->ImplementsInterface(UTetrisSlot::StaticClass()))
+	{
+		CompileLog.Error(FText::Format(LOCTEXT("Error_TetrisGridPanel_SlotClassNotImplementingInterface", "'{0}' has SlotWidgetClass property set to'{1}' and that Class doesn't implement ITetrisSlotInterface - required for any UTetrisGridPanel to function."), FText::FromString(GetName()), FText::FromString(SlotWidgetClass->GetName())));
+	}
 }
 
 #endif

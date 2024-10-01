@@ -14,4 +14,15 @@ class INVENTORYSYSTEM_API UTetrisSlot : public UInterface
 class INVENTORYSYSTEM_API ITetrisSlot : public IInterface
 {
 	GENERATED_IINTERFACE_BODY()
+
+public:
+	UFUNCTION(BlueprintNativeEvent)
+	void OnSlotHoverChanged(bool bIsHovered);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnSlotUsedChanged(bool bIsSlotUsed);
+
+	UFUNCTION(BlueprintNativeEvent)
+	bool CanUseSlot();
+
 };

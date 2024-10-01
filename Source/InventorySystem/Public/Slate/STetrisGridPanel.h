@@ -15,6 +15,8 @@ class FArrangedChildren;
 class FPaintArgs;
 class FSlateWindowElementList;
 
+DECLARE_DELEGATE_RetVal(TSharedRef<SBorder>, FOnGenerateTetrisSlot)
+
 // Tetris-like grid panel. Most logic "borrowed" from SGridPanel
 class INVENTORYSYSTEM_API STetrisGridPanel : public SPanel
 {
@@ -177,6 +179,8 @@ public:
 
 		SLATE_ARGUMENT(FVector2D, GridSize)
 
+		SLATE_EVENT(FOnGenerateTetrisSlot, OnGenerateTetrisSlot)
+
 	SLATE_END_ARGS()
 
 	STetrisGridPanel();
@@ -199,9 +203,7 @@ public:
 	void SetGridSize(FVector2D GridSize);
 
 public:
-
 	// SWidget interface
-
 	virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry, const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override;
 	virtual void OnArrangeChildren(const FGeometry& AllottedGeometry, FArrangedChildren& ArrangedChildren) const override;
 	virtual void CacheDesiredSize(float) override;
@@ -209,7 +211,6 @@ public:
 	virtual FChildren* GetChildren() override;
 
 private:
-
 	/**
 	 * Given an array of values, re-populate the array such that every contains the partial sums up to that element.
 	 * i.e. Array[N] = Array.Sum(0 .. N-1)
@@ -243,8 +244,11 @@ private:
 	 */
 	void NotifySlotChanged(const FSlot* InSlot, bool bSlotLayerChanged = false);
 
-private:
+protected:
+	/** Delegate to be invoked when the list needs to generate a new widget from a data item. */
+	FOnGenerateTetrisSlot OnGenerateTetrisSlot;
 
+private:
 	/** The slots that are placed into various grid locations */
 	TPanelChildren<FSlot> Slots;
 
@@ -264,4 +268,6 @@ private:
 	FVector2D TotalDesiredSizes;
 
 	FVector2D GridSize;
+
+	TMap<FVector2D, TSharedPtr<SBorder>> TetrisSlots;
 };

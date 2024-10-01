@@ -83,9 +83,13 @@ void STetrisGridPanel::Construct(const FArguments& InArgs)
 {
 	TotalDesiredSizes = FVector2D::ZeroVector;
 
+	GridSize = InArgs._GridSize;
+	OnGenerateTetrisSlot = InArgs._OnGenerateTetrisSlot;
+
+	Slots.Reserve(InArgs._Slots.Num());
+
 	// Populate the slots such that they are sorted by Layer (order preserved within layers)
 	// Also determine the grid size
-	Slots.Reserve(InArgs._Slots.Num());
 	for (int32 SlotIndex = 0; SlotIndex < InArgs._Slots.Num(); ++SlotIndex)
 	{
 		int32 SlotLocation = FindInsertSlotLocation(InArgs._Slots[SlotIndex].GetSlot());
@@ -101,6 +105,18 @@ void STetrisGridPanel::Construct(const FArguments& InArgs)
 		FSlot& NewSlot = Slots[SlotLocation];
 		NewSlot.Panel = SharedThis(this);
 		NotifySlotChanged(&NewSlot);
+	}
+
+	if (OnGenerateTetrisSlot.IsBound())
+	{
+		for (int32 y = 0; y < GridSize.Y; y++)
+		{
+			for (int32 x = 0; x < GridSize.X; x++)
+			{
+				TSharedPtr<SBorder> SlotBorder = OnGenerateTetrisSlot.Execute();
+				TetrisSlots.Add(FVector2D(x, y), SlotBorder);
+			}
+		}
 	}
 }
 
@@ -276,12 +292,10 @@ FVector2D STetrisGridPanel::ComputeDesiredSize(float) const
 	return TotalDesiredSizes;
 }
 
-
 FChildren* STetrisGridPanel::GetChildren()
 {
 	return &Slots;
 }
-
 
 FVector2D STetrisGridPanel::GetDesiredRegionSize(const FIntPoint& StartCell, int32 Width, int32 Height) const
 {
