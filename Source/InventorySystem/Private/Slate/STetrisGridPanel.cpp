@@ -86,7 +86,7 @@ void STetrisGridPanel::Construct(const FArguments& InArgs)
 	GridSize = InArgs._GridSize;
 	OnGenerateTetrisSlot = InArgs._OnGenerateTetrisSlot;
 
-	Slots.Reserve(InArgs._Slots.Num());
+	Slots.Reserve(InArgs._Slots.Num() + GridSize.X * GridSize.Y);
 
 	// Populate the slots such that they are sorted by Layer (order preserved within layers)
 	// Also determine the grid size
@@ -113,8 +113,15 @@ void STetrisGridPanel::Construct(const FArguments& InArgs)
 		{
 			for (int32 x = 0; x < GridSize.X; x++)
 			{
-				TSharedPtr<SBorder> SlotBorder = OnGenerateTetrisSlot.Execute();
-				TetrisSlots.Add(FVector2D(x, y), SlotBorder);
+				STetrisGridPanel::FSlot* Slot;
+				TSharedPtr<SWidget> SlotBorder = OnGenerateTetrisSlot.Execute();
+				AddSlot(x, y, FVector2D(1, 1), STetrisGridPanel::Layer(STetrisGridPanel::Layer::SlotLayer))
+					.Expose(Slot)
+					.HAlign(EHorizontalAlignment::HAlign_Fill)
+					.VAlign(EVerticalAlignment::VAlign_Fill)
+					[
+						SlotBorder.ToSharedRef()
+					];
 			}
 		}
 	}
@@ -222,10 +229,6 @@ void STetrisGridPanel::OnArrangeChildren(const FGeometry& AllottedGeometry, FArr
 	}
 
 	FVector2D LocalSize = AllottedGeometry.GetLocalSize();
-	if (Columns.Num() > GridSize.X || Rows.Num() > GridSize.Y)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Tetris grid has actual size greater than its max size. Max grid size: %s; Actual Size: %d.%d"), *GridSize.ToString(), Columns.Num(), Rows.Num())
-	}
 
 	float CellSize = FVector2D(LocalSize.X / GridSize.X, LocalSize.Y / GridSize.Y).GetMin();
 
@@ -256,9 +259,10 @@ void STetrisGridPanel::OnArrangeChildren(const FGeometry& AllottedGeometry, FArr
 			AlignmentArrangeResult XAxisResult = AlignChild<Orient_Horizontal>(SlotSize.X, CurSlot, SlotPadding);
 			AlignmentArrangeResult YAxisResult = AlignChild<Orient_Vertical>(SlotSize.Y, CurSlot, SlotPadding);
 
+			TSharedRef<SWidget> Widget = CurSlot.GetWidget();
 			// Output the result
 			ArrangedChildren.AddWidget(ChildVisibility, AllottedGeometry.MakeChild(
-				CurSlot.GetWidget(),
+				Widget,
 				ThisCellOffset + FVector2D(XAxisResult.Offset, YAxisResult.Offset),
 				FVector2D(XAxisResult.Size, YAxisResult.Size)
 			));
@@ -327,7 +331,6 @@ void STetrisGridPanel::ComputePartialSums(TArray<float>& TurnMeIntoPartialSums)
 	// We assume there is a 0-valued item already at the end of this array.
 	// We need it so that we can  compute the original values
 	// by doing Array[N] - Array[N-1];
-
 
 	float LastValue = 0;
 	float SumSoFar = 0;

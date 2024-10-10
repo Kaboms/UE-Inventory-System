@@ -7,6 +7,7 @@
 #include "Widgets/SWidget.h"
 #include "Components/PanelWidget.h"
 #include "Slate/STetrisGridPanel.h"
+#include "Blueprint/UserWidgetPool.h"
 #include "TetrisGridPanel.generated.h"
 
 class IWidgetCompilerLog;
@@ -60,7 +61,7 @@ protected:
 	// End of UWidget interface
 
 private:
-	TSharedRef<SBorder> HandleGenerateTetrisSlot();
+	TSharedRef<SWidget> HandleGenerateTetrisSlot();
 
 protected:
 	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetGridSize", meta = (UIMin = "1", UIMax = "64", Delta = "1"))
@@ -70,6 +71,9 @@ protected:
 	TSubclassOf<UUserWidget> SlotWidgetClass;
 
 	TSharedPtr<STetrisGridPanel> MyTetrisGridPanel;
+
+	UPROPERTY(Transient)
+	FUserWidgetPool EntryWidgetPool;
 
 private:
 	friend class FTetrisGridPanelDetails;

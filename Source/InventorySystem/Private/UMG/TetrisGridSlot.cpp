@@ -15,7 +15,7 @@ UTetrisGridSlot::UTetrisGridSlot(const FObjectInitializer& ObjectInitializer)
 	HorizontalAlignment = HAlign_Fill;
 	VerticalAlignment = VAlign_Fill;
 
-	Layer = 0;
+	SlotSize = FVector2D(1, 1);
 }
 
 void UTetrisGridSlot::ReleaseSlateResources(bool bReleaseChildren)
@@ -27,7 +27,7 @@ void UTetrisGridSlot::ReleaseSlateResources(bool bReleaseChildren)
 
 void UTetrisGridSlot::BuildSlot(TSharedRef<STetrisGridPanel> TetrisGridPanel)
 {
-	TetrisGridPanel->AddSlot(Column, Row, SlotSize, STetrisGridPanel::Layer(Layer))
+	TetrisGridPanel->AddSlot(Column, Row, SlotSize, STetrisGridPanel::Layer(STetrisGridPanel::Layer::ContentLayer))
 		.Expose(Slot)
 		.Padding(Padding)
 		.HAlign(HorizontalAlignment)
@@ -80,23 +80,12 @@ void UTetrisGridSlot::SetColumn(int32 InColumn)
 	}
 }
 
-int32 UTetrisGridSlot::GetLayer() const
-{
-	return Slot ? Slot->GetLayer() : Layer;
-}
-
-void UTetrisGridSlot::SetLayer(int32 InLayer)
-{
-	Layer = InLayer;
-	if (Slot)
-	{
-		Slot->SetLayer(InLayer);
-	}
-}
-
 void UTetrisGridSlot::SetSlotSize(FVector2D InSlotSize)
 {
-	checkf(SlotSize.X > 0 && SlotSize.Y > 0, TEXT("Invalid grid size X: %d; Y: %d"), SlotSize.X, SlotSize.Y)
+	if (InSlotSize.X <= 0 || InSlotSize.Y <= 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid slot size X: %d; Y: %d"), InSlotSize.X, InSlotSize.Y);
+	}
 
 	SlotSize = InSlotSize;
 	if (Slot)
@@ -146,8 +135,6 @@ void UTetrisGridSlot::SynchronizeProperties()
 
 	SetRow(Row);
 	SetColumn(Column);
-
-	SetLayer(Layer);
 
 	SetSlotSize(SlotSize);
 }

@@ -3,6 +3,7 @@
 #include "UMG/TetrisGridPanel.h"
 #include "UMG/TetrisGridSlot.h"
 #include "Slate/ITetrisSlot.h"
+#include "Slate/SObjectWidget.h"
 
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Editor/WidgetCompilerLog.h"
@@ -16,6 +17,7 @@
 
 UTetrisGridPanel::UTetrisGridPanel(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
+	, EntryWidgetPool(*this)
 {
 	bIsVariable = false;
 	SetVisibilityInternal(ESlateVisibility::SelfHitTestInvisible);
@@ -25,6 +27,7 @@ void UTetrisGridPanel::ReleaseSlateResources(bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
 
+	EntryWidgetPool.ReleaseAllSlateResources();
 	MyTetrisGridPanel.Reset();
 }
 
@@ -73,9 +76,9 @@ TSharedRef<SWidget> UTetrisGridPanel::RebuildWidget()
 	return MyTetrisGridPanel.ToSharedRef();
 }
 
-TSharedRef<SBorder> UTetrisGridPanel::HandleGenerateTetrisSlot()
+TSharedRef<SWidget> UTetrisGridPanel::HandleGenerateTetrisSlot()
 {
-	return SNew(SBorder);
+	return EntryWidgetPool.GetOrCreateInstance(SlotWidgetClass)->TakeWidget();
 }
 
 UTetrisGridSlot* UTetrisGridPanel::AddChildToGrid(UWidget* Content, int32 InRow, int32 InColumn)
@@ -98,8 +101,6 @@ FVector2D UTetrisGridPanel::GetGridSize() const
 
 void UTetrisGridPanel::SetGridSize(FVector2D InGridSize)
 {
-	checkf(InGridSize.X > 0 && InGridSize.Y > 0, TEXT("Invalid grid size X: %d; Y: %d"), InGridSize.X, InGridSize.Y)
-
 	GridSize = InGridSize;
 
 	if (MyTetrisGridPanel)
@@ -127,6 +128,8 @@ const FText UTetrisGridPanel::GetPaletteCategory()
 
 void UTetrisGridPanel::ValidateCompiledDefaults(IWidgetCompilerLog& CompileLog) const
 {
+	Super::ValidateCompiledDefaults(CompileLog);
+
 	if (!SlotWidgetClass)
 	{
 		CompileLog.Error(FText::Format(LOCTEXT("Error_TetrisGridPanel_MissingSlotClass", "{0} has no SlotWidgetClass specified - required for any UTetrisGridPanel to function."), FText::FromString(GetName())));
@@ -134,6 +137,10 @@ void UTetrisGridPanel::ValidateCompiledDefaults(IWidgetCompilerLog& CompileLog) 
 	else if (!SlotWidgetClass->ImplementsInterface(UTetrisSlot::StaticClass()))
 	{
 		CompileLog.Error(FText::Format(LOCTEXT("Error_TetrisGridPanel_SlotClassNotImplementingInterface", "'{0}' has SlotWidgetClass property set to'{1}' and that Class doesn't implement ITetrisSlotInterface - required for any UTetrisGridPanel to function."), FText::FromString(GetName()), FText::FromString(SlotWidgetClass->GetName())));
+	}
+	else if (GridSize.X <= 0 || GridSize.Y <= 0)
+	{
+		CompileLog.Error(FText::Format(LOCTEXT("Error_TetrisGridPanel_InvalidGridSize", "Invalid grid size X: %d; Y: %d"), GridSize.X, GridSize.Y));
 	}
 }
 

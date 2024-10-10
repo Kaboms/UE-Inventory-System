@@ -15,7 +15,7 @@ class FArrangedChildren;
 class FPaintArgs;
 class FSlateWindowElementList;
 
-DECLARE_DELEGATE_RetVal(TSharedRef<SBorder>, FOnGenerateTetrisSlot)
+DECLARE_DELEGATE_RetVal(TSharedRef<SWidget>, FOnGenerateTetrisSlot)
 
 // Tetris-like grid panel. Most logic "borrowed" from SGridPanel
 class INVENTORYSYSTEM_API STetrisGridPanel : public SPanel
@@ -34,6 +34,9 @@ public:
 		}
 
 		int32 TheLayer;
+
+		static const int32 SlotLayer = 0;
+		static const int32 ContentLayer = 1;
 	};
 
 	class INVENTORYSYSTEM_API FSlot : public TBasicLayoutWidgetSlot<FSlot>
@@ -268,6 +271,4 @@ private:
 	FVector2D TotalDesiredSizes;
 
 	FVector2D GridSize;
-
-	TMap<FVector2D, TSharedPtr<SBorder>> TetrisSlots;
 };

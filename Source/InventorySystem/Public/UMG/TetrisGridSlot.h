@@ -38,13 +38,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Layout|Tetris Grid Slot")
 	void SetColumn(int32 InColumn);
 
-	/** Gets the offset this cell drawn on top of others. */
-	int32 GetLayer() const;
-
-	/** Sets positive values offset this cell to be hit-tested and drawn on top of others. */
-	UFUNCTION(BlueprintCallable, Category = "Layout|Tetris Grid Slot")
-	void SetLayer(int32 InLayer);
-
 	/** Sets positive values offset this cell to be hit-tested and drawn on top of others. */
 	UFUNCTION(BlueprintCallable, Category = "Layout|Tetris Grid Slot")
 	void SetSlotSize(FVector2D InSlotSize);
@@ -99,10 +92,6 @@ protected:
 	/** The column index of the cell this slot is in */
 	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetColumn", meta = (UIMin = "0"), Category = "Layout|Tetris Grid Slot")
 	int32 Column;
-
-	/** Positive values offset this cell to be hit-tested and drawn on top of others. Default is 0; i.e. no offset. */
-	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetLayer", Category = "Layout|Tetris Grid Slot")
-	int32 Layer;
 
 	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetSlotSize", Category = "Layout|Tetris Grid Slot", meta = (UIMin = "1", UIMax = "64", Delta = "1"))
 	FVector2D SlotSize;
