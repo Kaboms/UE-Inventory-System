@@ -3,8 +3,6 @@
 #include "UMG/TetrisGridSlot.h"
 #include "Components/Widget.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(TetrisGridSlot)
-
 /////////////////////////////////////////////////////
 // UTetrisGridSlot
 
@@ -165,6 +163,16 @@ void UTetrisGridSlot::SynchronizeFromTemplate(const UPanelSlot* const TemplateSl
 	const ThisClass* const TemplateTetrisGridSlot = CastChecked<ThisClass>(TemplateSlot);
 	SetRow(TemplateTetrisGridSlot->GetRow());
 	SetColumn(TemplateTetrisGridSlot->GetColumn());
+}
+
+UTetrisGridSlot* UTetrisGridSlot::SlotAsTetrisGridSlot(UWidget* Widget)
+{
+	if (Widget)
+	{
+		return Cast<UTetrisGridSlot>(Widget->Slot);
+	}
+
+	return nullptr;
 }
 
 #endif

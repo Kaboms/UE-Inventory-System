@@ -10,12 +10,73 @@
 #include "Widgets/SWidget.h"
 #include "Layout/Children.h"
 #include "Widgets/SPanel.h"
+#include "InputCoreTypes.h"
 
 class FArrangedChildren;
 class FPaintArgs;
 class FSlateWindowElementList;
 
 DECLARE_DELEGATE_RetVal(TSharedRef<SWidget>, FOnGenerateTetrisSlot)
+
+class INVENTORYSYSTEM_API STetrisGridSlotBorder : public SBorder
+{
+public:
+	SLATE_BEGIN_ARGS(STetrisGridSlotBorder)
+		: _Content()
+		{
+			_Visibility = EVisibility::Visible;
+		}
+		SLATE_DEFAULT_SLOT(FArguments, Content)
+
+	SLATE_EVENT(FOnDragDetected, OnDragDetected)
+
+	SLATE_END_ARGS()
+
+	STetrisGridSlotBorder(){}
+
+	void Construct(const FArguments& InArgs)
+	{
+		SBorder::Construct(SBorder::FArguments()
+			.HAlign(HAlign_Fill)
+			.VAlign(VAlign_Fill)
+			.Padding(0)
+			.Content()
+			[
+				InArgs._Content.Widget
+			]);
+
+		OnDragDetectedHandlerDelegate = InArgs._OnDragDetected;
+	}
+
+	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("STetrisGridSlotBorder::OnMouseButtonDown"));
+
+		// for OnDragDetected to fire, the widget has to handle mouse button down
+		if (OnDragDetectedHandlerDelegate.IsBound())
+		{
+			return FReply::Handled().DetectDrag(SharedThis(this), MouseEvent.GetEffectingButton());
+		}
+
+		return FReply::Unhandled();
+	}
+
+	virtual FReply OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override
+	{
+		UE_LOG(LogTemp, Warning, TEXT("STetrisGridSlotBorder::OnDragDetected"));
+
+		// for OnDragDetected to fire, the widget has to handle mouse button down
+		if (OnDragDetectedHandlerDelegate.IsBound())
+		{
+			return OnDragDetectedHandlerDelegate.Execute(MyGeometry, MouseEvent);
+		}
+
+		return FReply::Unhandled();
+	}
+
+protected:
+	FOnDragDetected OnDragDetectedHandlerDelegate;
+};
 
 // Tetris-like grid panel. Most logic "borrowed" from SGridPanel
 class INVENTORYSYSTEM_API STetrisGridPanel : public SPanel
@@ -212,6 +273,9 @@ public:
 	virtual void CacheDesiredSize(float) override;
 	virtual FVector2D ComputeDesiredSize(float) const override;
 	virtual FChildren* GetChildren() override;
+
+	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+	virtual FReply OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 
 private:
 	/**

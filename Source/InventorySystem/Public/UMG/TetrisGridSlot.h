@@ -17,8 +17,11 @@
 UCLASS()
 class INVENTORYSYSTEM_API UTetrisGridSlot : public UPanelSlot
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
+
 public:
+	UTetrisGridSlot(const FObjectInitializer& ObjectInitializer);
+
 	FMargin GetPadding() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Layout|Border Slot")
@@ -71,6 +74,9 @@ public:
 	virtual bool NudgeByDesigner(const FVector2D& NudgeDirection, const TOptional<int32>& GridSnapSize) override;
 	virtual void SynchronizeFromTemplate(const UPanelSlot* const TemplateSlot) override;
 #endif //WITH_EDITOR
+
+	UFUNCTION(BlueprintPure, Category = "Slot")
+	static UTetrisGridSlot* SlotAsTetrisGridSlot(UWidget* Widget);
 
 protected:
 	/** The padding area between the slot and the content it contains. */

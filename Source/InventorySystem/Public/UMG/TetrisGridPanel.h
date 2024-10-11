@@ -21,9 +21,11 @@ class UTetrisGridSlot;
 UCLASS(meta = (SlotInterface = TetrisSlot))
 class INVENTORYSYSTEM_API UTetrisGridPanel : public UPanelWidget
 {
-	GENERATED_UCLASS_BODY()
+	GENERATED_BODY()
 
 public:
+	UTetrisGridPanel(const FObjectInitializer& ObjectInitializer);
+
 	/**  */
 	UFUNCTION(BlueprintCallable, Category = "Widget")
 	UTetrisGridSlot* AddChildToGrid(UWidget* Content, int32 InRow = 0, int32 InColumn = 0);
@@ -48,6 +50,9 @@ public:
 	virtual const FText GetPaletteCategory() override;
 	virtual void ValidateCompiledDefaults(IWidgetCompilerLog& CompileLog) const override;
 #endif
+
+	UFUNCTION(BlueprintCallable)
+	void InitContainer();
 
 protected:
 	// UPanelWidget
@@ -74,6 +79,9 @@ protected:
 
 	UPROPERTY(Transient)
 	FUserWidgetPool EntryWidgetPool;
+
+	UPROPERTY(BlueprintReadWrite, Meta = (ExposeOnSpawn))
+	class UTetrisItemsContainer* TetrisItemsContainer;
 
 private:
 	friend class FTetrisGridPanelDetails;

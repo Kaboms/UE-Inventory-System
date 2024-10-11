@@ -8,8 +8,6 @@
 #include "Widgets/DeclarativeSyntaxSupport.h"
 #include "Editor/WidgetCompilerLog.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(TetrisGridPanel)
-
 #define LOCTEXT_NAMESPACE "UMG"
 
 /////////////////////////////////////////////////////
@@ -142,6 +140,11 @@ void UTetrisGridPanel::ValidateCompiledDefaults(IWidgetCompilerLog& CompileLog) 
 	{
 		CompileLog.Error(FText::Format(LOCTEXT("Error_TetrisGridPanel_InvalidGridSize", "Invalid grid size X: %d; Y: %d"), GridSize.X, GridSize.Y));
 	}
+}
+
+void UTetrisGridPanel::InitContainer()
+{
+
 }
 
 #endif

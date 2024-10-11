@@ -120,7 +120,10 @@ void STetrisGridPanel::Construct(const FArguments& InArgs)
 					.HAlign(EHorizontalAlignment::HAlign_Fill)
 					.VAlign(EVerticalAlignment::VAlign_Fill)
 					[
-						SlotBorder.ToSharedRef()
+						SNew(STetrisGridSlotBorder)
+							[
+								SlotBorder.ToSharedRef()
+							]
 					];
 			}
 		}
@@ -299,6 +302,21 @@ FVector2D STetrisGridPanel::ComputeDesiredSize(float) const
 FChildren* STetrisGridPanel::GetChildren()
 {
 	return &Slots;
+}
+
+FReply STetrisGridPanel::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	//if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
+	//{
+	//	return FReply::Handled().DetectDrag(SharedThis(this), EKeys::LeftMouseButton);
+	//}
+
+	return FReply::Unhandled();
+}
+
+FReply STetrisGridPanel::OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	return FReply::Unhandled();
 }
 
 FVector2D STetrisGridPanel::GetDesiredRegionSize(const FIntPoint& StartCell, int32 Width, int32 Height) const

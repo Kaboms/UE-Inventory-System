@@ -25,6 +25,7 @@ public class InventorySystem : ModuleRules
                 "UMG",
                 "Slate",
                 "SlateCore",
+                "InputCore",
             }
             );
 
