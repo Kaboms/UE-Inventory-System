@@ -6,14 +6,10 @@ UItemBase* UItemData::ConstructItemInstance(UObject* InOuter, UItemData* ItemDat
     return ItemData->ConstructItemInstance(InOuter);
 }
 
-UItemData::UItemData()
+UItemData::UItemData(const FObjectInitializer& ObjectInitializer)
+    :Super(ObjectInitializer)
 {
     ItemInstanceClass = UItemBase::StaticClass();
-
-    for (const auto& MetadataEntry : MetadataEntries)
-    {
-        MetadataEntriesCache.Add(MetadataEntry->GetClass(), MetadataEntry);
-    }
 }
 
 UItemBase* UItemData::ConstructItemInstance(UObject* Outer)
@@ -27,6 +23,14 @@ UItemBase* UItemData::ConstructItemInstance(UObject* Outer)
 
 UItemMetadata* UItemData::FindMetadataByClass(TSubclassOf<UItemMetadata> MetadataClass)
 {
+    if (MetadataEntriesCache.IsEmpty())
+    {
+        for (const auto& MetadataEntry : MetadataEntries)
+        {
+            MetadataEntriesCache.Add(MetadataEntry->GetClass(), MetadataEntry);
+        }
+    }
+
     if (UItemMetadata** ItemMetadata = MetadataEntriesCache.Find(MetadataClass))
     {
         return *ItemMetadata;

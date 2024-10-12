@@ -37,10 +37,10 @@ UClass* UTetrisGridPanel::GetSlotClass() const
 void UTetrisGridPanel::OnSlotAdded(UPanelSlot* InSlot)
 {
 	// Add the child to the live canvas if it already exists
-	if (MyTetrisGridPanel.IsValid())
-	{
-		CastChecked<UTetrisGridSlot>(InSlot)->BuildSlot(MyTetrisGridPanel.ToSharedRef());
-	}
+	//if (MyTetrisGridPanel.IsValid())
+	//{
+	//	CastChecked<UTetrisGridSlot>(InSlot)->BuildSlot(MyTetrisGridPanel.ToSharedRef());
+	//}
 }
 
 void UTetrisGridPanel::OnSlotRemoved(UPanelSlot* InSlot)
@@ -79,14 +79,21 @@ TSharedRef<SWidget> UTetrisGridPanel::HandleGenerateTetrisSlot()
 	return EntryWidgetPool.GetOrCreateInstance(SlotWidgetClass)->TakeWidget();
 }
 
-UTetrisGridSlot* UTetrisGridPanel::AddChildToGrid(UWidget* Content, int32 InRow, int32 InColumn)
+UTetrisGridSlot* UTetrisGridPanel::AddChildToGrid(UWidget* Content, FVector2D SlotSize, TSet<FVector2D> SlotForm, int32 InRow, int32 InColumn)
 {
 	UTetrisGridSlot* GridSlot = Cast<UTetrisGridSlot>(Super::AddChild(Content));
-
 	if (GridSlot != nullptr)
 	{
 		GridSlot->SetRow(InRow);
 		GridSlot->SetColumn(InColumn);
+		GridSlot->SetSlotSize(SlotSize);
+		GridSlot->SetSlotForm(SlotForm);
+
+		// Add the child to the live canvas if it already exists
+		if (MyTetrisGridPanel.IsValid())
+		{
+			GridSlot->BuildSlot(MyTetrisGridPanel.ToSharedRef());
+		}
 	}
 
 	return GridSlot;
@@ -140,11 +147,6 @@ void UTetrisGridPanel::ValidateCompiledDefaults(IWidgetCompilerLog& CompileLog) 
 	{
 		CompileLog.Error(FText::Format(LOCTEXT("Error_TetrisGridPanel_InvalidGridSize", "Invalid grid size X: %d; Y: %d"), GridSize.X, GridSize.Y));
 	}
-}
-
-void UTetrisGridPanel::InitContainer()
-{
-
 }
 
 #endif

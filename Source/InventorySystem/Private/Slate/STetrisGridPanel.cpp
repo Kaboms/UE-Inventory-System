@@ -5,6 +5,7 @@
 #include "Layout/ArrangedChildren.h"
 #include "Rendering/DrawElements.h"
 #include "Layout/LayoutUtils.h"
+#include "Slate/SObjectWidget.h"
 
 SLATE_IMPLEMENT_WIDGET(STetrisGridPanel)
 
@@ -44,19 +45,20 @@ STetrisGridPanel::STetrisGridPanel()
 	SetCanTick(false);
 }
 
-STetrisGridPanel::FSlot::FSlotArguments STetrisGridPanel::Slot(int32 Column, int32 Row, FVector2D SlotSize, STetrisGridPanel::Layer InLayer)
+STetrisGridPanel::FSlot::FSlotArguments STetrisGridPanel::Slot(int32 Column, int32 Row, FVector2D SlotSize, TSet<FVector2d> Form, STetrisGridPanel::Layer InLayer)
 {
-	return FSlot::FSlotArguments(MakeUnique<FSlot>(Column, Row, SlotSize, InLayer.TheLayer));
+	return FSlot::FSlotArguments(MakeUnique<FSlot>(Column, Row, SlotSize, Form, InLayer.TheLayer));
 }
 
-STetrisGridPanel::FScopedWidgetSlotArguments STetrisGridPanel::AddSlot(int32 Column, int32 Row, FVector2D SlotSize, STetrisGridPanel::Layer InLayer)
+STetrisGridPanel::FScopedWidgetSlotArguments STetrisGridPanel::AddSlot(int32 Column, int32 Row, FVector2D SlotSize, TSet<FVector2d> Form, STetrisGridPanel::Layer InLayer)
 {
 	TWeakPtr<STetrisGridPanel> WeakPanel = SharedThis(this);
 
-	TUniquePtr<FSlot> NewSlot = MakeUnique<FSlot>(Column, Row, SlotSize, InLayer.TheLayer);
+	TUniquePtr<FSlot> NewSlot = MakeUnique<FSlot>(Column, Row, SlotSize, Form, InLayer.TheLayer);
 	NewSlot->Panel = WeakPanel;
 
 	int32 InsertLocation = FindInsertSlotLocation(NewSlot.Get());
+
 	return FScopedWidgetSlotArguments{ MoveTemp(NewSlot), this->Slots, InsertLocation,
 		[WeakPanel](const FSlot* InNewSlot, int32 InsertedLocation)
 		{
@@ -114,16 +116,31 @@ void STetrisGridPanel::Construct(const FArguments& InArgs)
 			for (int32 x = 0; x < GridSize.X; x++)
 			{
 				STetrisGridPanel::FSlot* Slot;
-				TSharedPtr<SWidget> SlotBorder = OnGenerateTetrisSlot.Execute();
-				AddSlot(x, y, FVector2D(1, 1), STetrisGridPanel::Layer(STetrisGridPanel::Layer::SlotLayer))
+
+				TSharedPtr<SWidget> TetrisSlot = OnGenerateTetrisSlot.Execute();
+				TetrisSlot->SetVisibility(EVisibility::HitTestInvisible);
+
+				TSharedPtr<STetrisGridSlotBorder> SlotBorder = SNew(STetrisGridSlotBorder)
+					.Position(FVector2D(x, y))
+					.OnDragDetected(this, &STetrisGridPanel::HandleOnSlotDragDetected)
+					.PreviewMouseButtonDown(this, &STetrisGridPanel::HandleOnSlotPreviewMouseButtonDown)
+					[
+						TetrisSlot.ToSharedRef()
+					];
+
+				SlotBorder->SetOnMouseButtonDown(FPointerEventHandler::CreateSP(this, &STetrisGridPanel::HandleOnSlotMouseButtonDown, FVector2D(x, y)));
+				SlotBorder->SetOnMouseButtonUp(FPointerEventHandler::CreateSP(this, &STetrisGridPanel::HandleOnSlotMouseButtonUp, FVector2D(x, y)));
+				SlotBorder->SetOnMouseMove(FPointerEventHandler::CreateSP(this, &STetrisGridPanel::HandleOnSlotMouseMove, FVector2D(x, y)));
+				SlotBorder->SetOnMouseDoubleClick(FPointerEventHandler::CreateSP(this, &STetrisGridPanel::HandleOnSlotMouseDoubleClick, FVector2D(x, y)));
+				SlotBorder->SetOnMouseEnter(FNoReplyPointerEventHandler::CreateSP(this, &STetrisGridPanel::HandleOnSlotMouseEnter, FVector2D(x, y)));
+				SlotBorder->SetOnMouseLeave(FSimpleNoReplyPointerEventHandler::CreateSP(this, &STetrisGridPanel::HandleOnSlotMouseLeave, FVector2D(x, y)));
+
+				AddSlot(x, y, FVector2D(1, 1), TSet<FVector2D>(), STetrisGridPanel::Layer(STetrisGridPanel::Layer::SlotLayer))
 					.Expose(Slot)
 					.HAlign(EHorizontalAlignment::HAlign_Fill)
 					.VAlign(EVerticalAlignment::VAlign_Fill)
 					[
-						SNew(STetrisGridSlotBorder)
-							[
-								SlotBorder.ToSharedRef()
-							]
+						SlotBorder.ToSharedRef()
 					];
 			}
 		}
@@ -304,19 +321,91 @@ FChildren* STetrisGridPanel::GetChildren()
 	return &Slots;
 }
 
-FReply STetrisGridPanel::OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+
+FReply STetrisGridPanel::HandleOnSlotDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, const FVector2D& Position)
 {
-	//if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
-	//{
-	//	return FReply::Handled().DetectDrag(SharedThis(this), EKeys::LeftMouseButton);
-	//}
+	if (TSharedPtr<SObjectWidget> ObjectWidget = GetSlotWidgetFromPosition(Position))
+	{
+		return ObjectWidget->OnDragDetected(ObjectWidget->GetCachedGeometry(), MouseEvent);
+	}
 
 	return FReply::Unhandled();
 }
 
-FReply STetrisGridPanel::OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+FReply STetrisGridPanel::HandleOnSlotPreviewMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, const FVector2D& Position)
 {
+	if (TSharedPtr<SObjectWidget> ObjectWidget = GetSlotWidgetFromPosition(Position))
+	{
+		return ObjectWidget->OnPreviewMouseButtonDown(ObjectWidget->GetCachedGeometry(), MouseEvent);
+	}
+
 	return FReply::Unhandled();
+}
+
+FReply STetrisGridPanel::HandleOnSlotMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, FVector2D Position)
+{
+	if (TSharedPtr<SObjectWidget> ObjectWidget = GetSlotWidgetFromPosition(Position))
+	{
+		return ObjectWidget->OnMouseButtonDown(ObjectWidget->GetCachedGeometry(), MouseEvent);
+	}
+
+	return FReply::Unhandled();
+}
+
+FReply STetrisGridPanel::HandleOnSlotMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, FVector2D Position)
+{
+	if (TSharedPtr<SObjectWidget> ObjectWidget = GetSlotWidgetFromPosition(Position))
+	{
+		return ObjectWidget->OnMouseButtonUp(ObjectWidget->GetCachedGeometry(), MouseEvent);
+	}
+
+	return FReply::Unhandled();
+}
+
+FReply STetrisGridPanel::HandleOnSlotMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, FVector2D Position)
+{
+	if (TSharedPtr<SObjectWidget> ObjectWidget = GetSlotWidgetFromPosition(Position))
+	{
+		return ObjectWidget->OnMouseMove(ObjectWidget->GetCachedGeometry(), MouseEvent);
+	}
+
+	return FReply::Unhandled();
+}
+
+FReply STetrisGridPanel::HandleOnSlotMouseDoubleClick(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, FVector2D Position)
+{
+	if (TSharedPtr<SObjectWidget> ObjectWidget = GetSlotWidgetFromPosition(Position))
+	{
+		return ObjectWidget->OnMouseButtonDoubleClick(ObjectWidget->GetCachedGeometry(), MouseEvent);
+	}
+
+	return FReply::Unhandled();
+}
+
+void STetrisGridPanel::HandleOnSlotMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, FVector2D Position)
+{
+	if (TSharedPtr<SObjectWidget> ObjectWidget = GetSlotWidgetFromPosition(Position))
+	{
+		return ObjectWidget->OnMouseEnter(ObjectWidget->GetCachedGeometry(), MouseEvent);
+	}
+}
+
+void STetrisGridPanel::HandleOnSlotMouseLeave(const FPointerEvent& MouseEvent, FVector2D Position)
+{
+	if (TSharedPtr<SObjectWidget> ObjectWidget = GetSlotWidgetFromPosition(Position))
+	{
+		return ObjectWidget->OnMouseLeave(MouseEvent);
+	}
+}
+
+TSharedPtr<SObjectWidget> STetrisGridPanel::GetSlotWidgetFromPosition(const FVector2D& Position)
+{
+	if (const FSlot** SlotPtr = SlotsPositions.Find(Position))
+	{
+		TSharedPtr<SWidget> Widget = (*SlotPtr)->GetWidget();
+		return StaticCastSharedPtr<SObjectWidget>(Widget);
+	}
+	return nullptr;
 }
 
 FVector2D STetrisGridPanel::GetDesiredRegionSize(const FIntPoint& StartCell, int32 Width, int32 Height) const
@@ -412,7 +501,33 @@ void STetrisGridPanel::NotifySlotChanged(const FSlot* InSlot, bool bSlotLayerCha
 			});
 	}
 
+	SaveSlotPosition(InSlot);
+
 	Invalidate(EInvalidateWidgetReason::Layout);
+}
+
+void STetrisGridPanel::SaveSlotPosition(const FSlot* InSlot)
+{
+	if (InSlot->GetLayer()== STetrisGridPanel::Layer::ContentLayer)
+	{
+		if (!InSlot->GetForm().IsEmpty())
+		{
+			for (const FVector2D& FormPos : InSlot->GetForm())
+			{
+				SlotsPositions.Add(FVector2D(InSlot->GetColumn() + FormPos.X, InSlot->GetRow() + FormPos.Y), InSlot);
+			}
+		}
+		else
+		{
+			for (int32 y = 0; y < InSlot->GetSlotSize().Y; y++)
+			{
+				for (int32 x = 0; x < InSlot->GetSlotSize().X; x++)
+				{
+					SlotsPositions.Add(FVector2D(InSlot->GetColumn() + x, InSlot->GetRow() + y), InSlot);
+				}
+			}
+		}
+	}
 }
 
 void STetrisGridPanel::ComputeDesiredCellSizes(TArray<float>& OutColumns, TArray<float>& OutRows) const

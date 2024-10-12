@@ -25,7 +25,7 @@ void UTetrisGridSlot::ReleaseSlateResources(bool bReleaseChildren)
 
 void UTetrisGridSlot::BuildSlot(TSharedRef<STetrisGridPanel> TetrisGridPanel)
 {
-	TetrisGridPanel->AddSlot(Column, Row, SlotSize, STetrisGridPanel::Layer(STetrisGridPanel::Layer::ContentLayer))
+	TetrisGridPanel->AddSlot(Column, Row, SlotSize, SlotForm, STetrisGridPanel::Layer(STetrisGridPanel::Layer::ContentLayer))
 		.Expose(Slot)
 		.Padding(Padding)
 		.HAlign(HorizontalAlignment)
@@ -95,6 +95,20 @@ void UTetrisGridSlot::SetSlotSize(FVector2D InSlotSize)
 FVector2D UTetrisGridSlot::GetSlotSize() const
 {
 	return SlotSize;
+}
+
+void UTetrisGridSlot::SetSlotForm(TSet<FVector2D> InSlotForm)
+{
+	SlotForm = InSlotForm;
+	if (Slot)
+	{
+		Slot->SetForm(SlotForm);
+	}
+}
+
+TSet<FVector2D> UTetrisGridSlot::GetSlotForm() const
+{
+	return SlotForm;
 }
 
 EHorizontalAlignment UTetrisGridSlot::GetHorizontalAlignment() const

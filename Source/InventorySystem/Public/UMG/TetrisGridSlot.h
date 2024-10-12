@@ -47,6 +47,11 @@ public:
 
 	FVector2D GetSlotSize() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Layout|Tetris Grid Slot")
+	void SetSlotForm(TSet<FVector2D> SlotForm);
+
+	TSet<FVector2D> GetSlotForm() const;
+
 	/** */
 	EHorizontalAlignment GetHorizontalAlignment() const;
 
@@ -101,6 +106,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetSlotSize", Category = "Layout|Tetris Grid Slot", meta = (UIMin = "1", UIMax = "64", Delta = "1"))
 	FVector2D SlotSize;
+
+	// Use this for exact slot form. By default slot is Rectangle setted by SlotSize property
+	UPROPERTY(EditAnywhere, Getter, Setter, BlueprintSetter = "SetSlotForm", Category = "Layout|Tetris Grid Slot")
+	TSet<FVector2D> SlotForm;
 
 private:
 	/** A raw pointer to the slot to allow us to adjust the size, padding...etc at runtime. */

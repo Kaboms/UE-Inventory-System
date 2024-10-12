@@ -87,12 +87,29 @@ void UTetrisItemsContainer::PlaceToCell(UContainerItemBase* ContainerItem, FVect
 
         ItemsSlots.Add(ContainerItem, Slot);
 
-        for (int32 x = 0; x < SlotMetadata->Size.X; x++)
+        if (!SlotMetadata->Form.IsEmpty())
         {
-            for (int32 y = 0; y < SlotMetadata->Size.Y; y++)
+            for (const FVector2f& FormPos : SlotMetadata->Form)
             {
-                FVector2f CellToAdd = TopLeft + FVector2f(x, y);
+                if (FormPos.X >= SlotMetadata->Size.X || FormPos.Y >= SlotMetadata->Size.Y)
+                {
+                    UE_LOG(InventorySystem, Error, TEXT("Invalid tetris item slot form! Item Pos: %s; Item Size: %s; Form Pos: %s"), *Slot.Position.ToString(), *SlotMetadata->Size.ToString(), *FormPos.ToString());
+                    break;
+                }
+
+                FVector2f CellToAdd = TopLeft + FormPos;
                 ItemsMap.Add(CellToAdd, ContainerItem);
+            }
+        }
+        else
+        {
+            for (int32 x = 0; x < SlotMetadata->Size.X; x++)
+            {
+                for (int32 y = 0; y < SlotMetadata->Size.Y; y++)
+                {
+                    FVector2f CellToAdd = TopLeft + FVector2f(x, y);
+                    ItemsMap.Add(CellToAdd, ContainerItem);
+                }
             }
         }
     }

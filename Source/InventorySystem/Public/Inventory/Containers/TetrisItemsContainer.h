@@ -88,7 +88,8 @@ protected:
 
 	virtual void EmptyPosition(const FVector2f& Position);
 
-private:
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	// For fast access to item slots
 	TMap<UContainerItemBase*, FTetrisContainerSlot> ItemsSlots;
 };

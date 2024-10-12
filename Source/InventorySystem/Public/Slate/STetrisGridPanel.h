@@ -18,66 +18,6 @@ class FSlateWindowElementList;
 
 DECLARE_DELEGATE_RetVal(TSharedRef<SWidget>, FOnGenerateTetrisSlot)
 
-class INVENTORYSYSTEM_API STetrisGridSlotBorder : public SBorder
-{
-public:
-	SLATE_BEGIN_ARGS(STetrisGridSlotBorder)
-		: _Content()
-		{
-			_Visibility = EVisibility::Visible;
-		}
-		SLATE_DEFAULT_SLOT(FArguments, Content)
-
-	SLATE_EVENT(FOnDragDetected, OnDragDetected)
-
-	SLATE_END_ARGS()
-
-	STetrisGridSlotBorder(){}
-
-	void Construct(const FArguments& InArgs)
-	{
-		SBorder::Construct(SBorder::FArguments()
-			.HAlign(HAlign_Fill)
-			.VAlign(VAlign_Fill)
-			.Padding(0)
-			.Content()
-			[
-				InArgs._Content.Widget
-			]);
-
-		OnDragDetectedHandlerDelegate = InArgs._OnDragDetected;
-	}
-
-	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("STetrisGridSlotBorder::OnMouseButtonDown"));
-
-		// for OnDragDetected to fire, the widget has to handle mouse button down
-		if (OnDragDetectedHandlerDelegate.IsBound())
-		{
-			return FReply::Handled().DetectDrag(SharedThis(this), MouseEvent.GetEffectingButton());
-		}
-
-		return FReply::Unhandled();
-	}
-
-	virtual FReply OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override
-	{
-		UE_LOG(LogTemp, Warning, TEXT("STetrisGridSlotBorder::OnDragDetected"));
-
-		// for OnDragDetected to fire, the widget has to handle mouse button down
-		if (OnDragDetectedHandlerDelegate.IsBound())
-		{
-			return OnDragDetectedHandlerDelegate.Execute(MyGeometry, MouseEvent);
-		}
-
-		return FReply::Unhandled();
-	}
-
-protected:
-	FOnDragDetected OnDragDetectedHandlerDelegate;
-};
-
 // Tetris-like grid panel. Most logic "borrowed" from SGridPanel
 class INVENTORYSYSTEM_API STetrisGridPanel : public SPanel
 {
@@ -106,11 +46,12 @@ public:
 
 	public:
 		/** Default values for a slot. */
-		FSlot(int32 Column, int32 Row, FVector2D SlotSize, int32 InLayer)
+		FSlot(int32 Column, int32 Row, FVector2D SlotSize, TSet<FVector2d> Form, int32 InLayer)
 			: TBasicLayoutWidgetSlot<FSlot>(HAlign_Fill, VAlign_Fill)
 			, ColumnParam(Column)
 			, RowParam(Row)
 			, SlotSizeParam(SlotSize)
+			, FormParam(Form)
 			, LayerParam(InLayer)
 		{
 		}
@@ -124,6 +65,7 @@ public:
 		SLATE_ARGUMENT(TOptional<int32>, Layer)
 		/** Cell size */
 		SLATE_ARGUMENT(TOptional<FVector2D>, SlotSize)
+		SLATE_ARGUMENT(TOptional<TSet<FVector2D>>, Form)
 
 		SLATE_SLOT_END_ARGS()
 
@@ -192,6 +134,17 @@ public:
 			}
 		}
 
+		TSet<FVector2D> GetForm() const
+		{
+			return FormParam;
+		}
+
+		void SetForm(TSet<FVector2D> Form)
+		{
+			FormParam = Form;
+			NotifySlotChanged();
+		}
+
 	private:
 		/** The panel that contains this slot */
 		TWeakPtr<STetrisGridPanel> Panel;
@@ -201,6 +154,8 @@ public:
 		int32 LayerParam;
 
 		FVector2D SlotSizeParam;
+
+		TSet<FVector2D> FormParam;
 
 		/** Notify that the slot was changed */
 		FORCEINLINE void NotifySlotChanged(bool bSlotLayerChanged = false)
@@ -212,10 +167,86 @@ public:
 		}
 	};
 
+	class INVENTORYSYSTEM_API STetrisGridSlotBorder : public SBorder
+	{
+	public:
+		DECLARE_DELEGATE_RetVal_ThreeParams(FReply, FOnSlotBorderDragDetected,
+			const FGeometry&,
+			const FPointerEvent&,
+			const FVector2D&)
+
+		DECLARE_DELEGATE_RetVal_ThreeParams(FReply, FOnSlotBorderPreviewMouseButtonDown,
+			const FGeometry&,
+			const FPointerEvent&,
+			const FVector2D&)
+
+		SLATE_BEGIN_ARGS(STetrisGridSlotBorder)
+			: _Content()
+			{
+				_Visibility = EVisibility::Visible;
+			}
+			SLATE_DEFAULT_SLOT(FArguments, Content)
+
+			SLATE_EVENT(FOnSlotBorderDragDetected, OnDragDetected)
+			SLATE_EVENT(FOnSlotBorderPreviewMouseButtonDown, PreviewMouseButtonDown)
+			SLATE_ARGUMENT(FVector2D, Position)
+
+		SLATE_END_ARGS()
+
+		STetrisGridSlotBorder() {}
+
+		void Construct(const FArguments& InArgs)
+		{
+			SBorder::Construct(SBorder::FArguments()
+				.HAlign(HAlign_Fill)
+				.VAlign(VAlign_Fill)
+				.Padding(0)
+				.Content()
+				[
+					InArgs._Content.Widget
+				]);
+
+			OnDragDetectedDelegate = InArgs._OnDragDetected;
+			OnPreviewMouseButtonDownDelegate = InArgs._PreviewMouseButtonDown;
+			Position = InArgs._Position;
+		}
+
+		virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override
+		{
+			return FReply::Handled().DetectDrag(SharedThis(this), EKeys::LeftMouseButton);
+		}
+
+		virtual FReply OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override
+		{
+			if (OnDragDetectedDelegate.IsBound())
+			{
+				return OnDragDetectedDelegate.Execute(MyGeometry, MouseEvent, Position);
+			}
+			return FReply::Unhandled();
+		}
+
+		virtual FReply OnPreviewMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override
+		{
+			if (OnPreviewMouseButtonDownDelegate.IsBound())
+			{
+				return OnPreviewMouseButtonDownDelegate.Execute(MyGeometry, MouseEvent, Position);
+			}
+			return FReply::Unhandled();
+		}
+
+		FVector2D GetPosition() const { return Position; }
+
+	protected:
+		FOnSlotBorderDragDetected OnDragDetectedDelegate;
+		FOnSlotBorderPreviewMouseButtonDown OnPreviewMouseButtonDownDelegate;
+
+		FVector2D Position;
+	};
+
 	/**
 	 * Used by declarative syntax to create a Slot in the specified Column, Row and Layer.
 	 */
-	static FSlot::FSlotArguments Slot(int32 Column, int32 Row, FVector2D SlotSize, Layer InLayer = Layer(0));
+	static FSlot::FSlotArguments Slot(int32 Column, int32 Row, FVector2D SlotSize, TSet<FVector2d> Form, Layer InLayer = Layer(0));
 
 	using FScopedWidgetSlotArguments = TPanelChildren<FSlot>::FScopedWidgetSlotArguments;
 	/**
@@ -223,7 +254,9 @@ public:
 	 *
 	 * @return A reference to the newly-added slot
 	 */
-	FScopedWidgetSlotArguments AddSlot(int32 Column, int32 Row, FVector2D SlotSize, Layer InLayer = Layer(0));
+	FScopedWidgetSlotArguments AddSlot(int32 Column, int32 Row, FVector2D SlotSize, TSet<FVector2d> Form, Layer InLayer = Layer(0));
+
+	void AddTetrisGridSlot(STetrisGridPanel::FSlot* Slot, int32 Column, int32 Row, FVector2D SlotSize, TSet<FVector2d> Form, Layer InLayer = Layer(0));
 
 	/**
 	* Removes a slot from this panel which contains the specified SWidget
@@ -274,8 +307,17 @@ public:
 	virtual FVector2D ComputeDesiredSize(float) const override;
 	virtual FChildren* GetChildren() override;
 
-	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	virtual FReply OnDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+	virtual FReply HandleOnSlotDragDetected(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, const FVector2D& Position);
+
+	virtual FReply HandleOnSlotPreviewMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, const FVector2D& Position);
+	virtual FReply HandleOnSlotMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, FVector2D Position);
+	virtual FReply HandleOnSlotMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, FVector2D Position);
+	virtual FReply HandleOnSlotMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, FVector2D Position);
+	virtual FReply HandleOnSlotMouseDoubleClick(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, FVector2D Position);
+	virtual void HandleOnSlotMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent, FVector2D Position);
+	virtual void HandleOnSlotMouseLeave(const FPointerEvent& MouseEvent, FVector2D Position);
+
+	TSharedPtr<SObjectWidget> GetSlotWidgetFromPosition(const FVector2D& Position);
 
 private:
 	/**
@@ -311,6 +353,8 @@ private:
 	 */
 	void NotifySlotChanged(const FSlot* InSlot, bool bSlotLayerChanged = false);
 
+	void SaveSlotPosition(const FSlot* InSlot);
+
 protected:
 	/** Delegate to be invoked when the list needs to generate a new widget from a data item. */
 	FOnGenerateTetrisSlot OnGenerateTetrisSlot;
@@ -318,6 +362,8 @@ protected:
 private:
 	/** The slots that are placed into various grid locations */
 	TPanelChildren<FSlot> Slots;
+
+	TMap<FVector2D, const FSlot*> SlotsPositions;
 
 	/**
 	 * Offsets of each column from the beginning of the grid.

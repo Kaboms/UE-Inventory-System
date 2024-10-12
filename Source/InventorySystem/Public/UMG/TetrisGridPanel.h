@@ -28,7 +28,7 @@ public:
 
 	/**  */
 	UFUNCTION(BlueprintCallable, Category = "Widget")
-	UTetrisGridSlot* AddChildToGrid(UWidget* Content, int32 InRow = 0, int32 InColumn = 0);
+	UTetrisGridSlot* AddChildToGrid(UWidget* Content, FVector2D SlotSize, TSet<FVector2D> SlotForm, int32 InRow = 0, int32 InColumn = 0);
 
 	/** Gets the row index of the slot */
 	FVector2D GetGridSize() const;
@@ -50,9 +50,6 @@ public:
 	virtual const FText GetPaletteCategory() override;
 	virtual void ValidateCompiledDefaults(IWidgetCompilerLog& CompileLog) const override;
 #endif
-
-	UFUNCTION(BlueprintCallable)
-	void InitContainer();
 
 protected:
 	// UPanelWidget
@@ -79,9 +76,6 @@ protected:
 
 	UPROPERTY(Transient)
 	FUserWidgetPool EntryWidgetPool;
-
-	UPROPERTY(BlueprintReadWrite, Meta = (ExposeOnSpawn))
-	class UTetrisItemsContainer* TetrisItemsContainer;
 
 private:
 	friend class FTetrisGridPanelDetails;

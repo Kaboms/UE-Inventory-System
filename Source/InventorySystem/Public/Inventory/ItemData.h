@@ -27,7 +27,7 @@ public:
 	static UItemBase* ConstructItemInstance(UObject* Outer, UItemData* ItemData);
 
 public:
-	UItemData();
+	UItemData(const FObjectInitializer& ObjectInitializer);
 
 	// Construct item instance from ItemInstanceClass
 	UItemBase* ConstructItemInstance(UObject* Outer);
