@@ -152,7 +152,6 @@ void UTetrisGridSlot::SynchronizeProperties()
 }
 
 #if WITH_EDITOR
-
 bool UTetrisGridSlot::NudgeByDesigner(const FVector2D& NudgeDirection, const TOptional<int32>& GridSnapSize)
 {
 	const FVector2D ClampedDirection = NudgeDirection.ClampAxes(-1.0f, 1.0f);
@@ -178,6 +177,7 @@ void UTetrisGridSlot::SynchronizeFromTemplate(const UPanelSlot* const TemplateSl
 	SetRow(TemplateTetrisGridSlot->GetRow());
 	SetColumn(TemplateTetrisGridSlot->GetColumn());
 }
+#endif
 
 UTetrisGridSlot* UTetrisGridSlot::SlotAsTetrisGridSlot(UWidget* Widget)
 {
@@ -188,6 +188,3 @@ UTetrisGridSlot* UTetrisGridSlot::SlotAsTetrisGridSlot(UWidget* Widget)
 
 	return nullptr;
 }
-
-#endif
-
